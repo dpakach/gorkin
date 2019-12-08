@@ -45,7 +45,7 @@ func isDigit(ch byte) bool {
 }
 
 func isWhitespace(ch byte) bool {
-	if ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
+	if ch == ' ' || ch == '\t' || ch == '\r' {
 		return true
 	}
 	return false
@@ -53,12 +53,6 @@ func isWhitespace(ch byte) bool {
 
 func (l *Lexer) skipWhitespace() {
 	for isWhitespace(l.ch) {
-		l.readChar()
-	}
-}
-
-func (l *Lexer) skipWhitespacesTillLineBreak() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\r' {
 		l.readChar()
 	}
 }
@@ -115,6 +109,14 @@ func (l *Lexer) readWord() string {
 	return l.input[position:l.position]
 }
 
+func (l *Lexer) readTillLineBreak() string {
+	position := l.position
+	for l.ch != '\n'{
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
 func (l *Lexer) readBody() string {
 	position := l.position
 
@@ -125,7 +127,7 @@ func (l *Lexer) readBody() string {
 }
 
 func (l *Lexer) readTableData() string {
-	position := l.position + 1
+	position := l.position
 	for {
 		l.readChar()
 		if l.peekChar() == '|' || l.ch == 0 {
@@ -140,7 +142,13 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
 	switch l.ch {
-		case':':
+		case '#':
+			l.readChar()
+			l.skipWhitespace()
+			body := l.readTillLineBreak()
+			tok.Type = token.COMMENT
+			tok.Literal = strings.TrimSpace(body)
+		case ':':
 			tok = newToken(token.COLON, l.ch)
 			l.readChar()
 		case '"':
@@ -152,16 +160,21 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.TAG
 			word := l.readWord()
 			tok.Literal = word
+		case '\n':
+			l.readChar()
+			tok.Type = token.NEW_LINE
+			tok.Literal = token.NEW_LINE
 		case '<':
 			word := l.readExampleValue()
 			tok.Type = token.TABLE_DATA
 			tok.Literal = word
 			l.readChar()
 		case '|':
-			l.skipWhitespacesTillLineBreak()
-			if l.peekChar() == '\n' {
-				tok.Type = token.TABLE_LINE_BREAK
-				tok.Literal = token.TABLE_LINE_BREAK
+			l.readChar()
+			l.skipWhitespace()
+			if l.ch == '\n' {
+				tok.Type = token.NEW_LINE
+				tok.Literal = token.NEW_LINE
 				l.readChar()
 			} else {
 				tok.Type = token.TABLE_DATA

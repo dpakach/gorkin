@@ -22,12 +22,15 @@ const (
 	SCENARIO="SCENARIO"
 	OUTLINE="OUTLINE"
 	EXAMPLES="EXAMPLES"
+	BACKGROUND="BACKGROUND"
 	TAG="TAG"
 	EXAMPLE_VALUE="EXAMPLE_VALUE"
 	TABLE_DATA="TABLE_DATA"
-	TABLE_LINE_BREAK="TABLE_LINE_BREAK"
+	LINE_TEXT="LINE_TEXT"
 
 	COLON=":"
+	COMMENT="COMMENT"
+	NEW_LINE="NEW_LINE"
 )
 
 var keywords = map[string]TokenType {
@@ -39,6 +42,7 @@ var keywords = map[string]TokenType {
 	"But": BUT,
 	"Outline": OUTLINE,
 	"Examples": EXAMPLES,
+	"Background": BACKGROUND,
 }
 
 var GherkinKeyword = keywords
