@@ -15,20 +15,21 @@ func TestNextToken(t *testing.T) {
 
 	Scenario: Test Scenario
 		Given hello world
-		When test test
+		When test test "data"
 		Then run test
 		But not fail test
 
 	@smoke @anotherTag
-	Scenario Outline: Another Scenario
-		Given hello world is "big"
-		When test is 5 times test
-		Then <data1> must be <data2>
-		Examples:
-		| data1  | data2  |
-		| value1 | value2 |
-		| val1   | val2   |
-`
+    Scenario Outline: Another Scenario
+        Given hello world is "big"
+        When test is 5 times test
+        Then <data1> must be <data2>
+        Examples:
+        | data1  | data2  |
+        | value1 | value2 |
+        | val1   | val2   |
+
+		`
 
 	tests := []struct {
 		expectedType token.TokenType
@@ -64,51 +65,54 @@ func TestNextToken(t *testing.T) {
 		{token.NEW_LINE, token.NEW_LINE},
 		{token.WHEN, "When"},
 		{token.STEP_BODY, "test test"},
+		{token.STRING, "data"},
 		{token.NEW_LINE, token.NEW_LINE},
 		{token.THEN, "Then"},
 		{token.STEP_BODY, "run test"},
 		{token.NEW_LINE, token.NEW_LINE},
-		{token.BUT, "But"},
-		{token.STEP_BODY, "not fail test"},
-		{token.NEW_LINE, token.NEW_LINE},
+        {token.BUT, "But"},
+        {token.STEP_BODY, "not fail test"},
+        {token.NEW_LINE, token.NEW_LINE},
 
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.TAG, "smoke"},
-		{token.TAG, "anotherTag"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.SCENARIO, "Scenario"},
-		{token.OUTLINE, "Outline"},
-		{token.COLON, ":"},
-		{token.STEP_BODY, "Another Scenario"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.GIVEN, "Given"},
-		{token.STEP_BODY, "hello world is"},
-		{token.STRING, "big"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.WHEN, "When"},
-		{token.STEP_BODY, "test is"},
-		{token.NUMBER, "5"},
-		{token.STEP_BODY, "times test"},
-		{token.NEW_LINE, token.NEW_LINE},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.TAG, "smoke"},
+        {token.TAG, "anotherTag"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.SCENARIO, "Scenario"},
+        {token.OUTLINE, "Outline"},
+        {token.COLON, ":"},
+        {token.STEP_BODY, "Another Scenario"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.GIVEN, "Given"},
+        {token.STEP_BODY, "hello world is"},
+        {token.STRING, "big"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.WHEN, "When"},
+        {token.STEP_BODY, "test is"},
+        {token.NUMBER, "5"},
+        {token.STEP_BODY, "times test"},
+        {token.NEW_LINE, token.NEW_LINE},
 
-		{token.THEN, "Then"},
-		{token.TABLE_DATA, "data1"},
-		{token.STEP_BODY, "must be"},
-		{token.TABLE_DATA, "data2"},
-		{token.NEW_LINE, token.NEW_LINE},
+        {token.THEN, "Then"},
+        {token.TABLE_DATA, "data1"},
+        {token.STEP_BODY, "must be"},
+        {token.TABLE_DATA, "data2"},
+        {token.NEW_LINE, token.NEW_LINE},
 
-		{token.EXAMPLES, "Examples"},
-		{token.COLON, ":"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.TABLE_DATA, "data1"},
-		{token.TABLE_DATA, "data2"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.TABLE_DATA, "value1"},
-		{token.TABLE_DATA, "value2"},
-		{token.NEW_LINE, token.NEW_LINE},
-		{token.TABLE_DATA, "val1"},
-		{token.TABLE_DATA, "val2"},
-		{token.NEW_LINE, token.NEW_LINE},
+        {token.EXAMPLES, "Examples"},
+        {token.COLON, ":"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.TABLE_DATA, "data1"},
+        {token.TABLE_DATA, "data2"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.TABLE_DATA, "value1"},
+        {token.TABLE_DATA, "value2"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.TABLE_DATA, "val1"},
+        {token.TABLE_DATA, "val2"},
+        {token.NEW_LINE, token.NEW_LINE},
+        {token.NEW_LINE, token.NEW_LINE},
+		{token.EOF, token.EOF},
 	}
 
 	l := New(input)

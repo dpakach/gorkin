@@ -101,7 +101,7 @@ func (l *Lexer) readWord() string {
 	position := l.position
 	for {
 		l.readChar()
-		if isLetter(l.ch) || isDigit(l.ch) || l.ch == 0 {
+		if isLetter(l.ch) || isDigit(l.ch) {
 			continue
 		}
 		break
@@ -111,7 +111,10 @@ func (l *Lexer) readWord() string {
 
 func (l *Lexer) readTillLineBreak() string {
 	position := l.position
-	for l.ch != '\n'{
+	for l.ch != '\n' {
+		if l.ch == 0 {
+			break
+		}
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -120,7 +123,7 @@ func (l *Lexer) readTillLineBreak() string {
 func (l *Lexer) readBody() string {
 	position := l.position
 
-	for isLetter(l.ch) || l.ch == ' '{
+	for isValidBodyChar(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -142,6 +145,10 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
 	switch l.ch {
+		case 0:
+			tok.Literal = token.EOF
+			tok.Type = token.EOF
+			l.readChar()
 		case '#':
 			l.readChar()
 			l.skipWhitespace()
@@ -175,6 +182,10 @@ func (l *Lexer) NextToken() token.Token {
 			if l.ch == '\n' {
 				tok.Type = token.NEW_LINE
 				tok.Literal = token.NEW_LINE
+				l.readChar()
+			} else if l.ch == 0 {
+				tok.Type = token.EOF
+				tok.Literal = token.EOF
 				l.readChar()
 			} else {
 				tok.Type = token.TABLE_DATA

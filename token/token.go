@@ -16,6 +16,7 @@ const (
 	WHEN="WHEN"
 	THEN="THEN"
 	GIVEN="GIVEN"
+	AND="AND"
 	BUT="BUT"
 
 	FEATURE="FEATURE"
@@ -31,6 +32,8 @@ const (
 	COLON=":"
 	COMMENT="COMMENT"
 	NEW_LINE="NEW_LINE"
+
+	EOF="EOF"
 )
 
 var keywords = map[string]TokenType {
@@ -40,6 +43,7 @@ var keywords = map[string]TokenType {
 	"Given": GIVEN,
 	"Then": THEN,
 	"But": BUT,
+	"And": AND,
 	"Outline": OUTLINE,
 	"Examples": EXAMPLES,
 	"Background": BACKGROUND,
@@ -52,4 +56,14 @@ func LookupIdent(ident string) TokenType {
 		return tok
 	}
 	return ILLEGAL
+}
+
+func IsStepToken(t TokenType) bool {
+	stepTokens := []TokenType{GIVEN, WHEN, THEN, AND, BUT}
+	for _, step := range stepTokens {
+        if step == t {
+            return true
+        }
+    }
+    return false
 }
