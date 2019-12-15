@@ -40,6 +40,10 @@ func isStepToken(t token.Token) bool {
 	return false
 }
 
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
 func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
 }
@@ -100,7 +104,7 @@ func (p *Parser) Parse() *object.FeatureSet {
 	featureSet := &object.FeatureSet{}
 	p.skipNewLines()
 	for !p.curTokenIs(token.EOF) {
-		if !p.curTokenIs(token.TAG) || p.curTokenIs(token.FEATURE) {
+		if !(p.curTokenIs(token.TAG) || p.curTokenIs(token.FEATURE)) {
 			break
 		}
 		feature := p.ParseFeature()
@@ -128,9 +132,11 @@ func (p *Parser) ParseFeature() *object.Feature {
 	}
 	p.skipNewLines()
 	if !p.curTokenIs(token.FEATURE) {
+		p.peekError(token.FEATURE)
 		return nil
 	}
 	if !p.expectPeek(token.COLON) {
+		p.peekError(token.COLON)
 		return nil
 	}
 	p.nextToken()
@@ -138,6 +144,7 @@ func (p *Parser) ParseFeature() *object.Feature {
 		feature.Title = p.curToken.Literal
 	}
 	if !p.expectPeek(token.NEW_LINE) {
+		p.peekError(token.NEW_LINE)
 		return nil
 	}
 	p.skipNewLines()
@@ -171,13 +178,18 @@ func (p *Parser) ParseBackground() *object.Background{
 	p.skipNewLines()
 	background := &object.Background{}
 	if !p.curTokenIs(token.BACKGROUND) {
+		p.peekError(token.BACKGROUND)
 		return nil
 	}
 	if !p.expectPeekTokens(token.COLON, token.NEW_LINE) {
+		msg := fmt.Sprintf("Expected token to be COLON or NEW_LINE but got %s", p.curToken.Type)
+		p.errors = append(p.errors, msg)
 		return nil
 	}
 	p.skipNewLines()
 	if !isStepToken(p.curToken) {
+		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
+		p.errors = append(p.errors, msg)
 		return nil
 	}
 	steps := p.ParseBlockSteps()
@@ -193,6 +205,8 @@ func (p *Parser) ParseBlockSteps() []object.Step {
 	steps := []object.Step{}
 	p.skipNewLines()
 	if !isStepToken(p.curToken) {
+		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
+		p.errors = append(p.errors, msg)
 		return nil
 	}
 	for isStepToken(p.curToken) {
@@ -214,6 +228,7 @@ func (p *Parser) ParseTags() []string {
 func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 	p.skipNewLines()
 	if !p.curTokenIs(token.SCENARIO) {
+		p.peekError(p.curToken.Type)
 		return nil
 	}
 	scenarios := []object.ScenarioType{}
@@ -236,6 +251,7 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 	}
 	p.skipNewLines()
 	if !p.curTokenIs(token.SCENARIO) {
+		p.peekError(token.SCENARIO)
 		return nil
 	}
 	outLineType := false
@@ -244,6 +260,7 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 		p.nextToken()
 	}
 	if !p.expectPeek(token.COLON) {
+		p.peekError(token.COLON)
 		return nil
 	}
 	p.nextToken()
@@ -257,13 +274,21 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 	if outLineType {
 		p.skipNewLines()
 		if !p.curTokenIs(token.EXAMPLES) {
+			p.peekError(token.EXAMPLES)
 			return nil
 		}
-		if !p.expectPeekTokens(token.COLON, token.NEW_LINE) {
+		if !p.expectPeek(token.COLON) {
+			p.peekError(token.COLON)
 			return nil
 		}
+		if !p.expectPeek(token.NEW_LINE) {
+			p.peekError(token.NEW_LINE)
+			return nil
+		}
+
 		p.skipNewLines()
 		if !p.curTokenIs(token.TABLE_DATA) {
+			p.peekError(p.curToken.Type)
 			return nil
 		}
 		table := p.ParseTable()
@@ -283,6 +308,7 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 
 func (p *Parser) ParseStep() *object.Step {
 	step := &object.Step{}
+	p.skipNewLines()
 	if token.IsStepToken(p.curToken.Type) {
 		step.Token = p.curToken
 		p.nextToken()
@@ -306,9 +332,13 @@ func (p *Parser) ParseStep() *object.Step {
 	} else {
 		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
 		p.errors = append(p.errors, msg)
+		return nil
 	}
 	if p.curTokenIs(token.TABLE_DATA) {
 		table := p.ParseTable()
+		if table == nil {
+			return nil
+		}
 		step.Table = *table
 	}
 	return step
@@ -317,9 +347,18 @@ func (p *Parser) ParseStep() *object.Step {
 func (p *Parser) ParseTable() *object.Table {
 	var table object.Table
 	var tmp []string
+	p.skipNewLines()
+	if !p.curTokenIs(token.TABLE_DATA) {
+		p.peekError(token.TABLE_DATA)
+		return nil
+	}
 	for p.curTokenIs(token.TABLE_DATA) {
 		tmp = []string{}
 		for !(p.curTokenIs(token.NEW_LINE) || p.curTokenIs(token.EOF)) {
+			if !p.curTokenIs(token.TABLE_DATA) {
+				p.peekError(token.TABLE_DATA)
+				return nil
+			}
 			tmp = append(tmp, p.curToken.Literal)
 			p.nextToken()
 		}

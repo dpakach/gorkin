@@ -117,11 +117,25 @@ var stepDataProvider = map[string][]stepDataType{
 	},
 }
 
+func checkParserErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+	t.Errorf("Parser has %d errors", len(errors))
+
+	for _, msg := range errors {
+		t.Errorf("\nparser error: %q", msg)
+	}
+	t.FailNow()
+}
+
 func TestStepParsing(t *testing.T) {
 	for _, tt := range stepDataProvider["data1"] {
 		l := lexer.New(tt.input)
 		p := New(l)
 		parsed := p.ParseStep()
+		checkParserErrors(t, p)
 		assertStepsEqual(t, parsed, tt)
 	}
 }
@@ -182,6 +196,7 @@ func TestParsingBlockSteps(t *testing.T) {
 	p := New(l)
 
 	steps := p.ParseBlockSteps()
+	checkParserErrors(t, p)
 	assertBlockStepsEqual(t, stepDataProvider["data1"], steps)
 }
 
@@ -202,6 +217,7 @@ func TestParsingTags(t *testing.T) {
 	p := New(l)
 
 	tags := p.ParseTags()
+	checkParserErrors(t, p)
 
 	if !areArrayEqual(tags, expected) {
 		t.Fatalf("Tags mismatch, expedted %q, got %q", expected, tags)
@@ -218,6 +234,7 @@ func TestParseScenario(t *testing.T) {
 	p := New(l)
 
 	res := p.ParseScenarioType()
+	checkParserErrors(t, p)
 	scenario, ok := res.(*object.Scenario)
 	if !ok {
 		t.Fatalf("Type mismatch, expected Scenario but not got")
@@ -247,6 +264,7 @@ func TestParseScenarioOutline(t *testing.T) {
 	p := New(l)
 
 	res := p.ParseScenarioType()
+	checkParserErrors(t, p)
 	scenario, ok := res.(*object.ScenarioOutline)
 	if !ok {
 		t.Fatalf("Type mismatch, expected Scenario but not got")
@@ -282,6 +300,7 @@ func TestParseBackground(t *testing.T) {
 	p := New(l)
 
 	background := p.ParseBackground()
+	checkParserErrors(t, p)
 	if background == nil {
 		t.Fatal("Expected background but got nil.")
 	}
@@ -310,6 +329,7 @@ func TestParseScenarioTypeSet(t *testing.T) {
 	p := New(l)
 
 	scenarios := p.ParseScenarioTypeSet()
+	checkParserErrors(t, p)
 	if scenarios == nil {
 		t.Fatal("Expected feature but got nil")
 	}
@@ -361,6 +381,7 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 	p := New(l)
 
 	scenarios := p.ParseScenarioTypeSet()
+	checkParserErrors(t, p)
 	if scenarios == nil {
 		t.Fatal("Expected feature but got nil")
 	}
@@ -443,6 +464,7 @@ func TestParsingFeature(t *testing.T) {
 	p := New(l)
 
 	feature := p.ParseFeature()
+	checkParserErrors(t, p)
 
 	expectedTitle := "This is a feature"
 	if feature.Title != expectedTitle {
@@ -523,6 +545,7 @@ func TestParsingFeatureSet(t *testing.T) {
 	p := New(l)
 
 	featureSet := p.Parse()
+	checkParserErrors(t, p)
 	if len(featureSet.Features) != 2 {
 		t.Fatalf("Featureset length mismatch, expected %v, got %v", 3, len(featureSet.Features))
 	}
