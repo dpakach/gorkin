@@ -534,19 +534,14 @@ func TestParsingFeatureSet(t *testing.T) {
 
 		Scenario: test new
 			%v
-
-	@NewFeature @smoke
-	Feature: This is a feature
-		Scenario: Scenario test Case 1
-			%v
-	`, stepInput1, stepInput1, stepInput2, stepInput3, stepInput3)
+	`, stepInput1, stepInput1, stepInput2, stepInput3)
 
 	l := lexer.New(input)
 	p := New(l)
 
 	featureSet := p.Parse()
 	checkParserErrors(t, p)
-	if len(featureSet.Features) != 2 {
+	if len(featureSet.Features) != 1 {
 		t.Fatalf("Featureset length mismatch, expected %v, got %v", 3, len(featureSet.Features))
 	}
 
@@ -598,44 +593,4 @@ func TestParsingFeatureSet(t *testing.T) {
 	for i, data := range expected {
 		assertBlockStepsEqual(t, stepDataProvider[data.dataProviderKey], scenarios[i].(*object.Scenario).Steps)
 	}
-
-	feature = featureSet.Features[1]
-
-	expectedTitle = "This is a feature"
-	if feature.Title != expectedTitle {
-		t.Fatalf("Title mismatch, expected %v, got %v", expectedTitle, feature.Title)
-	}
-
-	expectedTags = []string{"NewFeature", "smoke"}
-
-	if !areArrayEqual(expectedTags, feature.Tags) {
-		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, feature.Tags)
-	}
-
-	if feature.Background != nil {
-		t.Fatalf("Expected background to be nil but got %v", feature.Background)
-	}
-
-	scenarios = feature.Scenarios
-	if scenarios == nil {
-		t.Fatal("Expected scenarios but got nil")
-	}
-
-	if len(scenarios) != 1 {
-		t.Fatalf("Expected number of scenarios to be 1 but got %v", len(scenarios))
-	}
-	expected = []struct {
-		title string
-		dataProviderKey string
-	} {
-		{
-			title: "Scenario test Case 1",
-			dataProviderKey: "data3",
-		},
-	}
-
-	for i, data := range expected {
-		assertBlockStepsEqual(t, stepDataProvider[data.dataProviderKey], scenarios[i].(*object.Scenario).Steps)
-	}
-
 }
