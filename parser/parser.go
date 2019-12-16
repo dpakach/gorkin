@@ -101,21 +101,20 @@ func (p *Parser) skipNewLines() {
 
 // Parse Functions
 func (p *Parser) Parse() *object.FeatureSet {
+
+	// TODO:Implement Parsing Multiple features from different Files
+
 	featureSet := &object.FeatureSet{}
 	p.skipNewLines()
-	for !p.curTokenIs(token.EOF) {
-		if !(p.curTokenIs(token.TAG) || p.curTokenIs(token.FEATURE)) {
-			break
-		}
-		feature := p.ParseFeature()
-		if feature != nil {
-			featureSet.Features = append(featureSet.Features, *feature)
-		} else {
-			break
-		}
-		p.skipNewLines()
+	if !(p.curTokenIs(token.FEATURE) || p.curTokenIs(token.TAG)) {
+		p.peekError(token.FEATURE)
+		return nil
 	}
-
+	feature := p.ParseFeature()
+	if feature == nil {
+		return nil
+	}
+	featureSet.Features = append(featureSet.Features, *feature)
 	return featureSet
 }
 
