@@ -166,7 +166,7 @@ func (p *Parser) ParseFeature() *object.Feature {
 	p.skipNewLines()
 
 	var scenarios []object.ScenarioType
-	if p.curTokenIs(token.SCENARIO) {
+	if p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG) {
 		scenarios = p.ParseScenarioTypeSet();
 	}
 	feature.Scenarios = scenarios
@@ -226,12 +226,12 @@ func (p *Parser) ParseTags() []string {
 
 func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 	p.skipNewLines()
-	if !p.curTokenIs(token.SCENARIO) {
+	if !(p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG)) {
 		p.peekError(p.curToken.Type)
 		return nil
 	}
 	scenarios := []object.ScenarioType{}
-	for p.curTokenIs(token.SCENARIO) {
+	for p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG) {
 		scenarios = append(scenarios, p.ParseScenarioType())
 		p.skipNewLines()
 	}
