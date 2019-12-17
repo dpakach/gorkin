@@ -1,8 +1,6 @@
 package object
 
-import (
-	"github.com/dpakach/gorkin/token"
-)
+import "gorkin/token"
 
 type objectType string
 

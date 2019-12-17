@@ -2,7 +2,7 @@ package lexer
 
 import (
 	"strings"
-	"github.com/dpakach/gorkin/token"
+	"gorkin/token"
 )
 
 type Lexer struct {

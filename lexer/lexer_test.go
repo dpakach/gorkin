@@ -1,7 +1,7 @@
 package lexer
 
 import "testing"
-import "github.com/dpakach/gorkin/token"
+import "gorkin/token"
 
 func TestNextToken(t *testing.T) {
 	input :=`

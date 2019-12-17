@@ -4,9 +4,9 @@ import (
 	"testing"
 	"fmt"
 
-	"github.com/dpakach/gorkin/token"
-	"github.com/dpakach/gorkin/object"
-	"github.com/dpakach/gorkin/lexer"
+	"gorkin/token"
+	"gorkin/object"
+	"gorkin/lexer"
 )
 
 type stepDataType struct {

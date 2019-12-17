@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"github.com/dpakach/gorkin/lexer"
-	"github.com/dpakach/gorkin/token"
-	"github.com/dpakach/gorkin/object"
+	"gorkin/lexer"
+	"gorkin/token"
+	"gorkin/object"
 	"fmt"
 	"strings"
 )

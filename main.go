@@ -5,9 +5,9 @@ import (
 	"io"
 	"fmt"
 	"io/ioutil"
-	"github.com/dpakach/gorkin/lexer"
-	"github.com/dpakach/gorkin/parser"
-	"github.com/dpakach/gorkin/object"
+	"gorkin/lexer"
+	"gorkin/parser"
+	"gorkin/object"
 )
 
 func main() {
@@ -30,7 +30,6 @@ func Run(path string) {
 	p := parser.New(l)
 
 	res := p.Parse()
-	fmt.Println(res.Features[0].Scenarios)
 	if len(p.Errors()) != 0 {
 		io.WriteString(out, "Parser Errors: \n")
 		for _, err := range p.Errors() {
