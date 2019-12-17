@@ -8,7 +8,7 @@ Feature: test
 
 	@tag
 	Scenario: example scenario
-		When i do something
+		When I do something
 		Then something happens
 
 	Scenario Outline: another example scenario

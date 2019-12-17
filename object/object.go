@@ -40,6 +40,7 @@ type Scenario struct {
 	Steps []Step
 	Tags []string
 	ScenarioText string
+	LineNumber int
 }
 func (s *Scenario) ScenarioTypeObject() {}
 
@@ -47,6 +48,7 @@ type ScenarioOutline struct {
 	Steps []Step
 	Tags []string
 	ScenarioText string
+	LineNumber int
 	Table Table
 }
 func (s *ScenarioOutline) ScenarioTypeObject() {}
@@ -56,6 +58,7 @@ type Step struct {
 	StepText string
 	Table Table
 	Data []string
+	LineNumber int
 }
 
 type Table [][]string

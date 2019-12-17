@@ -4,7 +4,7 @@ import (
 	"os"
 	"io"
 	"fmt"
-	"io/ioutil"
+	"path/filepath"
 	"gorkin/lexer"
 	"gorkin/parser"
 	"gorkin/object"
@@ -20,20 +20,26 @@ func main() {
 
 func Run(path string) {
 	out := os.Stdout
-	dat, err := ioutil.ReadFile(path)
+
+	abs,err := filepath.Abs(path)
 	if err != nil {
-		panic(err)
-	}
+		fmt.Printf("Invalid path provided, Make sure the file with path %q exists\n", path)
+		os.Exit(1)
+    }
 
+	if _, err = os.Stat(abs); os.IsNotExist(err) {
+		fmt.Printf("Error, Make sure the file with path %q exists\n", path)
+		os.Exit(1)
+    }
 
-	l := lexer.New(string(dat))
+	l := lexer.NewFromFile(abs)
 	p := parser.New(l)
 
 	res := p.Parse()
 	if len(p.Errors()) != 0 {
 		io.WriteString(out, "Parser Errors: \n")
 		for _, err := range p.Errors() {
-			io.WriteString(out, err + "\n")
+			io.WriteString(out, err.GetMessage() + "\n")
 		}
 	} else {
 		PrintResult(out, res)
