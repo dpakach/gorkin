@@ -1,21 +1,63 @@
 package parser
 
 import (
-	"gorkin/lexer"
-	"gorkin/token"
-	"gorkin/object"
 	"fmt"
+	"gorkin/lexer"
+	"gorkin/object"
+	"gorkin/token"
 	"strings"
 )
 
 type Parser struct {
 	l *lexer.Lexer
 
-	curToken token.Token
+	curToken  token.Token
 	peekToken token.Token
 
-	errors []string
+	errors []ParserError
 }
+
+type ParserError interface {
+	GetMessage() string
+	parserErrorType()
+}
+
+type GeneralParserError struct {
+    parser            Parser
+	LineNumber        int
+	Message string
+}
+
+func (p *GeneralParserError) GetMessage() string {
+	return fmt.Sprintf(
+		"Parser Error: %v : %v\n\t%v",
+		p.parser.l.FilePath,
+		p.LineNumber,
+		p.Message,
+	)
+	return p.Message
+}
+
+func (p *GeneralParserError) parserErrorType() {}
+
+type PeekError struct {
+	parser            Parser
+	LineNumber        int
+	ExpectedTokenType token.TokenType
+	ActualToken       token.Token
+}
+
+func (p *PeekError) GetMessage() string {
+	return fmt.Sprintf(
+		"Parser Error: %v : %v\n\tExpected token to be %q but got %q",
+		p.parser.l.FilePath,
+		p.LineNumber,
+		p.ExpectedTokenType,
+		p.ActualToken.Type,
+	)
+}
+
+func (p *PeekError) parserErrorType() {}
 
 // Parser Helper functions
 func (p *Parser) curTokenIs(t token.TokenType) bool {
@@ -40,7 +82,7 @@ func isStepToken(t token.Token) bool {
 	return false
 }
 
-func (p *Parser) Errors() []string {
+func (p *Parser) Errors() []ParserError {
 	return p.errors
 }
 
@@ -69,18 +111,21 @@ func (p *Parser) expectPeekTokens(tokens ...token.TokenType) bool {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	msg := fmt.Sprintf("Expected token to be %s, but got %s", t, p.peekToken.Type)
-	p.errors = append(p.errors, msg)
+	p.errors = append(p.errors, &PeekError{parser: *p, LineNumber: p.peekToken.LineNumber, ExpectedTokenType: t})
 }
 
 func (p *Parser) getParserErrors() []string {
-	return p.errors
+	var errors []string
+	for _, err := range p.Errors() {
+		errors = append(errors, err.GetMessage())
+	}
+	return errors
 }
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
-		l: l,
-		errors: []string{},
+		l:      l,
+		errors: []ParserError{},
 	}
 	p.nextToken()
 	p.nextToken()
@@ -167,13 +212,13 @@ func (p *Parser) ParseFeature() *object.Feature {
 
 	var scenarios []object.ScenarioType
 	if p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG) {
-		scenarios = p.ParseScenarioTypeSet();
+		scenarios = p.ParseScenarioTypeSet()
 	}
 	feature.Scenarios = scenarios
 	return feature
 }
 
-func (p *Parser) ParseBackground() *object.Background{
+func (p *Parser) ParseBackground() *object.Background {
 	p.skipNewLines()
 	background := &object.Background{}
 	if !p.curTokenIs(token.BACKGROUND) {
@@ -181,14 +226,12 @@ func (p *Parser) ParseBackground() *object.Background{
 		return nil
 	}
 	if !p.expectPeekTokens(token.COLON, token.NEW_LINE) {
-		msg := fmt.Sprintf("Expected token to be COLON or NEW_LINE but got %s", p.curToken.Type)
-		p.errors = append(p.errors, msg)
 		return nil
 	}
 	p.skipNewLines()
 	if !isStepToken(p.curToken) {
-		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
-		p.errors = append(p.errors, msg)
+		msg := fmt.Sprintf("Expected token to be a STEP_TYPE but got %s", p.curToken.Type)
+		p.errors = append(p.errors, &GeneralParserError{parser: *p, LineNumber: p.curToken.LineNumber, Message: msg})
 		return nil
 	}
 	steps := p.ParseBlockSteps()
@@ -204,8 +247,8 @@ func (p *Parser) ParseBlockSteps() []object.Step {
 	steps := []object.Step{}
 	p.skipNewLines()
 	if !isStepToken(p.curToken) {
-		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
-		p.errors = append(p.errors, msg)
+		msg := fmt.Sprintf("Expected token to be a STEP_TYPE but got %s", p.curToken.Type)
+		p.errors = append(p.errors, &GeneralParserError{parser: *p, LineNumber: p.curToken.LineNumber, Message: msg})
 		return nil
 	}
 	for isStepToken(p.curToken) {
@@ -292,15 +335,15 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 		}
 		table := p.ParseTable()
 		return &object.ScenarioOutline{
-			Steps: steps,
-			Tags: tags,
+			Steps:        steps,
+			Tags:         tags,
 			ScenarioText: title,
-			Table: *table,
+			Table:        *table,
 		}
 	}
-	return &object.Scenario {
-		Steps: steps,
-		Tags: tags,
+	return &object.Scenario{
+		Steps:        steps,
+		Tags:         tags,
 		ScenarioText: title,
 	}
 }
@@ -329,8 +372,8 @@ func (p *Parser) ParseStep() *object.Step {
 		step.StepText = strings.TrimSpace(step.StepText)
 		p.nextToken()
 	} else {
-		msg := fmt.Sprintf("Expected token to be a step but got %s", p.curToken.Type)
-		p.errors = append(p.errors, msg)
+		msg := fmt.Sprintf("Expected token to be a STEP_TYPE but got %s", p.curToken.Type)
+		p.errors = append(p.errors, &GeneralParserError{parser: *p, LineNumber: p.curToken.LineNumber, Message: msg})
 		return nil
 	}
 	if p.curTokenIs(token.TABLE_DATA) {

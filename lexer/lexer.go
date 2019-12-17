@@ -1,6 +1,7 @@
 package lexer
 
 import (
+	"io/ioutil"
 	"strings"
 	"gorkin/token"
 )
@@ -10,10 +11,23 @@ type Lexer struct {
 	position int
 	readPosition int
 	ch byte
+	currentLineNo int
+	FilePath string
 }
 
 func New(input string) * Lexer {
-	l := &Lexer{input: input}
+	l := &Lexer{input: input, currentLineNo:1}
+	l.readChar()
+	return l
+}
+
+func NewFromFile(path string) * Lexer {
+	dat, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+
+	l := &Lexer{input: string(dat), FilePath: path}
 	l.readChar()
 	return l
 }
@@ -207,6 +221,10 @@ func (l *Lexer) NextToken() token.Token {
 					tok.Type = token.STEP_BODY
 				}
 			}
+	}
+	tok.LineNumber = l.currentLineNo
+	if tok.Type == token.NEW_LINE {
+		l.currentLineNo += 1
 	}
 	return tok
 }
