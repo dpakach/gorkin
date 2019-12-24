@@ -38,6 +38,13 @@ const stepInput3 = `
 			When running tests
 			Then a basic step`
 
+const stepInput4 = `
+			When running tests
+			"""
+			This is a basic pystring
+			multiline too
+			"""`
+
 var stepDataProvider = map[string][]stepDataType{
 	"data1": []stepDataType{
 		{
@@ -115,6 +122,19 @@ var stepDataProvider = map[string][]stepDataType{
 			nil,
 		},
 	},
+
+	"data4": []stepDataType{
+		{
+			stepInput4,
+			token.WHEN,
+			"running tests\n{{s}}",
+			[]string{
+				`This is a basic pystring
+			multiline too`,
+			},
+			nil,
+		},
+	},
 }
 
 func checkParserErrors(t *testing.T, p *Parser) {
@@ -131,12 +151,14 @@ func checkParserErrors(t *testing.T, p *Parser) {
 }
 
 func TestStepParsing(t *testing.T) {
-	for _, tt := range stepDataProvider["data1"] {
-		l := lexer.New(tt.input)
-		p := New(l)
-		parsed := p.ParseStep()
-		checkParserErrors(t, p)
-		assertStepsEqual(t, parsed, tt)
+	for _, dataProvider := range stepDataProvider {
+		for _, tt := range dataProvider {
+			l := lexer.New(tt.input)
+			p := New(l)
+			parsed := p.ParseStep()
+			checkParserErrors(t, p)
+			assertStepsEqual(t, parsed, tt)
+		}
 	}
 }
 

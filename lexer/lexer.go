@@ -99,6 +99,24 @@ func (l *Lexer) readString() string {
 	return l.input[position:l.position]
 }
 
+func (l *Lexer) readPyString() string {
+	position := l.position + 1
+	for {
+		l.readChar()
+		if l.ch == '\n' {
+			l.currentLineNo += 1
+		}
+		if (l.ch == '"' && l.peekChar() == '"') || l.ch == 0 {
+			if l.peekChar() == '"' {
+				break
+			}
+		}
+	}
+
+	res := l.input[position:l.position]
+	return res
+}
+
 func (l *Lexer) readExampleValue() string {
 	position := l.position + 1
 	for {
@@ -173,9 +191,26 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.COLON, l.ch)
 			l.readChar()
 		case '"':
-			tok.Type = token.STRING
-			tok.Literal = l.readString()
-			l.readChar()
+			if l.peekChar() != '"' {
+				tok.Type = token.STRING
+				tok.Literal = l.readString()
+				l.readChar()
+			} else {
+				l.readChar()
+				if l.peekChar() != '"' {
+					tok.Type = token.STRING
+					tok.Literal = ""
+					l.readChar()
+				} else {
+					tok.LineNumber = l.currentLineNo
+					l.readChar()
+					tok.Type = token.PYSTRING
+					tok.Literal = strings.TrimSpace(l.readPyString())
+					l.readChar()
+					l.readChar()
+					l.readChar()
+				}
+			}
 		case '@':
 			l.readChar()
 			tok.Type = token.TAG
@@ -222,7 +257,9 @@ func (l *Lexer) NextToken() token.Token {
 				}
 			}
 	}
-	tok.LineNumber = l.currentLineNo
+	if tok.LineNumber == 0 {
+		tok.LineNumber = l.currentLineNo
+	}
 	if tok.Type == token.NEW_LINE {
 		l.currentLineNo += 1
 	}

@@ -383,6 +383,11 @@ func (p *Parser) ParseStep() *object.Step {
 		}
 		step.Table = *table
 	}
+	if p.curTokenIs(token.PYSTRING) {
+		step.StepText = step.StepText + "\n{{s}}"
+		step.Data = append(step.Data, p.curToken.Literal)
+		p.nextToken()
+	}
 	return step
 }
 
