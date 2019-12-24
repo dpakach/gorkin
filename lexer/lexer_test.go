@@ -20,15 +20,22 @@ func TestNextToken(t *testing.T) {
 		But not fail test
 
 	@smoke @anotherTag
-    Scenario Outline: Another Scenario
-        Given hello world is "big"
-        When test is 5 times test
-        Then <data1> must be <data2>
-        Examples:
-        | data1  | data2  |
-        | value1 | value2 |
-        | val1   | val2   |
+	Scenario Outline: Another Scenario
+		Given hello world is "big"
+		When test is 5 times test
+		Then <data1> must be <data2>
+		Examples:
+		| data1  | data2  |
+		| value1 | value2 |
+		| val1   | val2   |
 
+	Scenario: Third Scenario
+		Given step has some pystrings
+		"""
+		And some string "data" content
+		And another line
+		"""
+		Then something happens
 		`
 
 	tests := []struct {
@@ -112,19 +119,33 @@ func TestNextToken(t *testing.T) {
         {token.TABLE_DATA, "val1", 24},
         {token.TABLE_DATA, "val2", 24},
         {token.NEW_LINE, token.NEW_LINE, 24},
-        {token.NEW_LINE, token.NEW_LINE, 25},
-		{token.EOF, token.EOF, 26},
+
+		{token.NEW_LINE, token.NEW_LINE, 25},
+		{token.SCENARIO, "Scenario", 26},
+		{token.COLON, ":", 26},
+		{token.STEP_BODY, "Third Scenario", 26},
+		{token.NEW_LINE, token.NEW_LINE, 26},
+		{token.GIVEN, "Given", 27},
+		{token.STEP_BODY, "step has some pystrings", 27},
+		{token.NEW_LINE, token.NEW_LINE, 27},
+		{token.PYSTRING, `And some string "data" content
+		And another line`, 28},
+		{token.NEW_LINE, token.NEW_LINE, 31},
+		{token.THEN, "Then", 32},
+		{token.STEP_BODY, "something happens", 32},
+		{token.NEW_LINE, token.NEW_LINE, 32},
+		{token.EOF, token.EOF, 33},
 	}
 
 	l := New(input)
 
 	for i, tt := range tests {
 		tok := l.NextToken()
-		if tok.Literal != tt.expectedLiteral {
-			t.Fatalf("tests[%d] - token literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
-		}
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		}
+		if tok.Literal != tt.expectedLiteral {
+			t.Fatalf("tests[%d] - token literal wrong. expected=%q, got=%q", i, tt.expectedLiteral, tok.Literal)
 		}
 		if tok.LineNumber != tt.expectedLineNo {
 			t.Fatalf("tests[%d] - Line Number wrong. expected=%v, got=%v", i, tt.expectedLineNo, tok.LineNumber)
