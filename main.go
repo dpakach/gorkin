@@ -5,9 +5,9 @@ import (
 	"io"
 	"fmt"
 	"path/filepath"
-	"gorkin/lexer"
-	"gorkin/parser"
-	"gorkin/object"
+	"github.com/dpakach/gorkin/lexer"
+	"github.com/dpakach/gorkin/parser"
+	"github.com/dpakach/gorkin/object"
 )
 
 func main() {

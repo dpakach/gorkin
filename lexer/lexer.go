@@ -3,7 +3,7 @@ package lexer
 import (
 	"io/ioutil"
 	"strings"
-	"gorkin/token"
+	"github.com/dpakach/gorkin/token"
 )
 
 type Lexer struct {
