@@ -1,0 +1,12 @@
+language: go
+
+dist: xenial
+os: linux
+
+go:
+    - 1.13.5
+
+script:
+    - go build
+    - go test ./lexer
+    - go test ./parser
