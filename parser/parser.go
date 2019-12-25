@@ -30,7 +30,7 @@ type GeneralParserError struct {
 
 func (p *GeneralParserError) GetMessage() string {
 	return fmt.Sprintf(
-		"Parser Error: %v : %v\n\t%v",
+		"Parser Error: %v:%v %v",
 		p.parser.l.FilePath,
 		p.LineNumber,
 		p.Message,
@@ -41,7 +41,7 @@ func (p *GeneralParserError) GetMessage() string {
 func (p *GeneralParserError) parserErrorType() {}
 
 type PeekError struct {
-	parser            Parser
+	parser            *Parser
 	LineNumber        int
 	ExpectedTokenType token.TokenType
 	ActualToken       token.Token
@@ -49,7 +49,7 @@ type PeekError struct {
 
 func (p *PeekError) GetMessage() string {
 	return fmt.Sprintf(
-		"Parser Error: %v : %v\n\tExpected token to be %q but got %q",
+		"Parser Error: %v:%v Expected token to be %q but got %q",
 		p.parser.l.FilePath,
 		p.LineNumber,
 		p.ExpectedTokenType,
@@ -111,7 +111,7 @@ func (p *Parser) expectPeekTokens(tokens ...token.TokenType) bool {
 }
 
 func (p *Parser) peekError(t token.TokenType) {
-	p.errors = append(p.errors, &PeekError{parser: *p, LineNumber: p.peekToken.LineNumber, ExpectedTokenType: t})
+	p.errors = append(p.errors, &PeekError{parser: p, LineNumber: p.peekToken.LineNumber, ExpectedTokenType: t})
 }
 
 func (p *Parser) getParserErrors() []string {
