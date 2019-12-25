@@ -178,7 +178,7 @@ func (l *Lexer) NextToken() token.Token {
 	l.skipWhitespace()
 	switch l.ch {
 		case 0:
-			tok.Literal = token.EOF
+			tok.Literal = token.EOF.String()
 			tok.Type = token.EOF
 			l.readChar()
 		case '#':
@@ -219,7 +219,7 @@ func (l *Lexer) NextToken() token.Token {
 		case '\n':
 			l.readChar()
 			tok.Type = token.NEW_LINE
-			tok.Literal = token.NEW_LINE
+			tok.Literal = token.NEW_LINE.String()
 		case '<':
 			word := l.readExampleValue()
 			tok.Type = token.TABLE_DATA
@@ -230,11 +230,11 @@ func (l *Lexer) NextToken() token.Token {
 			l.skipWhitespace()
 			if l.ch == '\n' {
 				tok.Type = token.NEW_LINE
-				tok.Literal = token.NEW_LINE
+				tok.Literal = token.NEW_LINE.String()
 				l.readChar()
 			} else if l.ch == 0 {
 				tok.Type = token.EOF
-				tok.Literal = token.EOF
+				tok.Literal = token.EOF.String()
 				l.readChar()
 			} else {
 				tok.Type = token.TABLE_DATA

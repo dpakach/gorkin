@@ -1,6 +1,6 @@
 package token
 
-type TokenType string
+type TokenType int
 
 type Token struct {
 	Type TokenType
@@ -9,35 +9,66 @@ type Token struct {
 }
 
 const (
-	ILLEGAL="ILLEGAL"
-	STRING="STRING"
-	STEP_BODY="STEP_BODY"
-	NUMBER="NUMBER"
+	ILLEGAL TokenType = iota
+	STRING
+	STEP_BODY
+	NUMBER
 
-	WHEN="WHEN"
-	THEN="THEN"
-	GIVEN="GIVEN"
-	AND="AND"
-	BUT="BUT"
+	WHEN
+	THEN
+	GIVEN
+	AND
+	BUT
 
-	FEATURE="FEATURE"
-	SCENARIO="SCENARIO"
-	OUTLINE="OUTLINE"
-	EXAMPLES="EXAMPLES"
-	BACKGROUND="BACKGROUND"
-	TAG="TAG"
-	EXAMPLE_VALUE="EXAMPLE_VALUE"
-	TABLE_DATA="TABLE_DATA"
-	LINE_TEXT="LINE_TEXT"
+	FEATURE
+	SCENARIO
+	OUTLINE
+	EXAMPLES
+	BACKGROUND
+	TAG
+	EXAMPLE_VALUE
+	TABLE_DATA
+	LINE_TEXT
 
-	COLON=":"
-	COMMENT="COMMENT"
-	NEW_LINE="NEW_LINE"
+	COLON
+	COMMENT
+	NEW_LINE
 
-	PYSTRING=`PYSTRING`
+	PYSTRING
 
-	EOF="EOF"
+	EOF
 )
+
+func (token TokenType) String() string {
+	switch token {
+	case FEATURE:
+		return "Feature"
+	case SCENARIO:
+		return "Scenario"
+	case BACKGROUND:
+		return "Background"
+	case WHEN:
+		return "When"
+	case THEN:
+		return "Then"
+	case GIVEN:
+		return "Given"
+	case AND:
+		return "And"
+	case BUT:
+		return "But"
+	case OUTLINE:
+		return "Outline"
+	case EXAMPLES:
+		return "Examples"
+	case EOF:
+		return "EOF"
+	case NEW_LINE:
+		return "NEW_LINE"
+	}
+
+	return "Illegal"
+}
 
 var keywords = map[string]TokenType {
 	"Feature": FEATURE,
