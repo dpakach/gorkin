@@ -24,6 +24,10 @@ type FeatureSet struct {
 	Features []Feature
 }
 
+func (fs *FeatureSet) Merge(newFs *FeatureSet) {
+	fs.Features = append(fs.Features, newFs.Features...)
+}
+
 type Feature struct {
 	Title string
 	Token token.Token

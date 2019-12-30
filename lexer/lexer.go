@@ -47,7 +47,7 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 }
 
 func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '-' || ch == '.' || ch == '+'
 }
 
 func isValidBodyChar(ch byte) bool {
@@ -236,6 +236,9 @@ func (l *Lexer) NextToken() token.Token {
 				tok.Type = token.EOF
 				tok.Literal = token.EOF.String()
 				l.readChar()
+			} else if l.ch == '|' {
+				tok.Type = token.TABLE_DATA
+				tok.Literal = ""
 			} else {
 				tok.Type = token.TABLE_DATA
 				tok.Literal = strings.TrimSpace(l.readTableData())
