@@ -29,13 +29,17 @@ func TestNextToken(t *testing.T) {
 		| value1 | value2 |
 		| val1   | val2   |
 
-	Scenario: Third Scenario
+	Scenario Outline: Third Scenario
 		Given step has some pystrings
 		"""
 		And some string "data" content
 		And another line
 		"""
 		Then something happens
+		| val1   |  |
+		Examples:
+		| value1 | value2 |
+		| val1   | val2   |
 		`
 
 	tests := []struct {
@@ -122,6 +126,7 @@ func TestNextToken(t *testing.T) {
 
 		{token.NEW_LINE, token.NEW_LINE.String(), 25},
 		{token.SCENARIO, "Scenario", 26},
+		{token.OUTLINE, "Outline", 26},
 		{token.COLON, ":", 26},
 		{token.STEP_BODY, "Third Scenario", 26},
 		{token.NEW_LINE, token.NEW_LINE.String(), 26},
@@ -134,7 +139,19 @@ func TestNextToken(t *testing.T) {
 		{token.THEN, "Then", 32},
 		{token.STEP_BODY, "something happens", 32},
 		{token.NEW_LINE, token.NEW_LINE.String(), 32},
-		{token.EOF, token.EOF.String(), 33},
+		{token.TABLE_DATA, "val1", 33},
+		{token.TABLE_DATA, "", 33},
+		{token.NEW_LINE, token.NEW_LINE.String(), 33},
+		{token.EXAMPLES, "Examples", 34},
+		{token.COLON, ":", 34},
+		{token.NEW_LINE, token.NEW_LINE.String(), 34},
+		{token.TABLE_DATA, "value1", 35},
+		{token.TABLE_DATA, "value2", 35},
+		{token.NEW_LINE, token.NEW_LINE.String(), 35},
+		{token.TABLE_DATA, "val1", 36},
+		{token.TABLE_DATA, "val2", 36},
+		{token.NEW_LINE, token.NEW_LINE.String(), 36},
+		{token.EOF, token.EOF.String(), 37},
 	}
 
 	l := New(input)

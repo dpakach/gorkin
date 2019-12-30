@@ -9,6 +9,8 @@ Feature: test
 	@tag
 	Scenario: example scenario
 		When I do something
+			| also | with |
+			| a	| table |
 		Then something happens
 
 	Scenario Outline: another example scenario
@@ -19,4 +21,3 @@ Feature: test
 			| task |
 			| good |
 			| bad  |
-		

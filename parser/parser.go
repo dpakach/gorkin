@@ -139,7 +139,7 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) skipNewLines() {
-	for p.curTokenIs(token.NEW_LINE) {
+	for p.curTokenIs(token.NEW_LINE) || p.curTokenIs(token.COMMENT) {
 		p.nextToken()
 	}
 }

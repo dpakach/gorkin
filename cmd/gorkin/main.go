@@ -1,0 +1,61 @@
+package main
+
+import (
+	"bytes"
+	"io"
+	"os"
+	"fmt"
+	"log"
+	"time"
+	"path/filepath"
+	"github.com/dpakach/gorkin/lexer"
+	"github.com/dpakach/gorkin/parser"
+	"github.com/dpakach/gorkin/reporter"
+)
+
+func main() {
+	if len(os.Args) < 2 {
+		log.Fatal(fmt.Errorf("Opps, Seems like you forgot to provide the path of the feature file"))
+		os.Exit(1)
+	}
+	path := os.Args[1]
+	abs,err := filepath.Abs(path)
+	if err != nil {
+		log.Fatal(fmt.Errorf("Invalid path provided, Make sure the path %q is correct\n", path))
+		os.Exit(1)
+    }
+	fi, err := os.Stat(abs)
+	if os.IsNotExist(err) {
+		log.Fatal(fmt.Errorf("Error, Make sure the path %q exists\n", path))
+		os.Exit(1)
+    }
+
+	out := new(bytes.Buffer)
+	start := time.Now()
+	switch mode := fi.Mode(); {
+	case mode.IsDir():
+		err := filepath.Walk(abs, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				if ext := filepath.Ext(info.Name()); ext == ".feature" {
+					l := lexer.NewFromFile(path)
+					p := parser.New(l)
+					reporter.ParseAndReport(p, out)
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			log.Println(err)
+		}
+	case mode.IsRegular():
+		l := lexer.NewFromFile(path)
+		p := parser.New(l)
+		reporter.ParseAndReport(p, out)
+	}
+	io.Copy(os.Stdout, out)
+
+	io.WriteString(os.Stdout, fmt.Sprintf("\nCompleted in %v\n", time.Since(start)))
+}

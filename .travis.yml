@@ -7,6 +7,6 @@ go:
     - 1.13.5
 
 script:
-    - go build
+    - go build ./cmd/gorkin
     - go test ./lexer
     - go test ./parser

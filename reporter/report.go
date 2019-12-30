@@ -1,40 +1,12 @@
-package main
+package reporter
 
 import (
-	"os"
 	"io"
-	"fmt"
-	"path/filepath"
-	"github.com/dpakach/gorkin/lexer"
 	"github.com/dpakach/gorkin/parser"
 	"github.com/dpakach/gorkin/object"
 )
 
-func main() {
-	if len(os.Args) > 1 {
-		Run(os.Args[1])
-	} else {
-		fmt.Println("Opps, Seems like you forgot to provide the path of the feature file")
-	}
-}
-
-func Run(path string) {
-	out := os.Stdout
-
-	abs,err := filepath.Abs(path)
-	if err != nil {
-		fmt.Printf("Invalid path provided, Make sure the file with path %q exists\n", path)
-		os.Exit(1)
-    }
-
-	if _, err = os.Stat(abs); os.IsNotExist(err) {
-		fmt.Printf("Error, Make sure the file with path %q exists\n", path)
-		os.Exit(1)
-    }
-
-	l := lexer.NewFromFile(abs)
-	p := parser.New(l)
-
+func ParseAndReport(p *parser.Parser, out io.Writer) {
 	res := p.Parse()
 	if len(p.Errors()) != 0 {
 		io.WriteString(out, "Parser Errors: \n")
@@ -48,18 +20,19 @@ func Run(path string) {
 
 func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 	for _, feature := range featureSet.Features {
-		io.WriteString(out, "Feature :\n")
-		io.WriteString(out, "\tTitle :")
+		io.WriteString(out, "\n")
+		io.WriteString(out, "Feature:\n")
+		io.WriteString(out, "\tTitle: ")
 		io.WriteString(out, feature.Title)
 		io.WriteString(out, "\n\t")
-		io.WriteString(out, "Tags :")
+		io.WriteString(out, "Tags: ")
 		io.WriteString(out, "[")
 		for _, tag := range feature.Tags {
 			io.WriteString(out, " " + tag + " ")
 		}
 		io.WriteString(out, "]")
 		io.WriteString(out, "\n\n\t")
-		io.WriteString(out, "Background :\n\t")
+		io.WriteString(out, "Background:\n\t")
 		if feature.Background != nil {
 			io.WriteString(out, "\t")
 			PrintSteps(out, feature.Background.Steps)
@@ -70,7 +43,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 		var table object.Table
 		var tags []string
 		for _, scenario := range feature.Scenarios {
-			io.WriteString(out, "Scenario")
+			io.WriteString(out, "\n\tScenario")
 			outlineObj, ok := scenario.(*object.ScenarioOutline)
 			isOutline := ok
 			if isOutline {
@@ -87,10 +60,10 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 				titleString = scenarioObj.ScenarioText
 				steps = scenarioObj.Steps
 			}
-			io.WriteString(out, "Title :")
+			io.WriteString(out, "Title: ")
 			io.WriteString(out, titleString)
 			io.WriteString(out, "\n\t\t")
-			io.WriteString(out, "Tags :")
+			io.WriteString(out, "Tags: ")
 			io.WriteString(out, "[")
 			for _, tag := range tags {
 				io.WriteString(out, " " + tag + " ")
@@ -106,12 +79,12 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 
 func PrintSteps(out io.Writer, steps []object.Step) {
 	for _, step := range steps {
+		io.WriteString(out, "\n\t\t")
 		io.WriteString(out, "Step: ")
 		io.WriteString(out, step.Token.Literal)
 		io.WriteString(out, " - ")
 		io.WriteString(out, step.StepText)
 
-		io.WriteString(out, "\n\t\t")
 		if step.Table != nil {
 			PrintTable(out, step.Table)
 		}
@@ -119,12 +92,14 @@ func PrintSteps(out io.Writer, steps []object.Step) {
 }
 
 func PrintTable(out io.Writer, table object.Table) {
-	io.WriteString(out, "\n\t\tTable:\n\t\t\t")
-	for _, row := range table {
-		for _, data := range row {
-			io.WriteString(out, data)
-			io.WriteString(out, "\t")
+	if len(table) > 0 {
+		io.WriteString(out, "\n\t\tTable:")
+		for _, row := range table {
+			io.WriteString(out, "\n\t\t\t")
+			for _, data := range row {
+				io.WriteString(out, data)
+				io.WriteString(out, "\t")
+			}
 		}
-		io.WriteString(out, "\n\t\t\t")
 	}
 }
