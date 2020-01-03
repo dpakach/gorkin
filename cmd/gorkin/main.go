@@ -2,15 +2,15 @@ package main
 
 import (
 	"bytes"
-	"io"
-	"os"
 	"fmt"
-	"log"
-	"time"
-	"path/filepath"
 	"github.com/dpakach/gorkin/lexer"
 	"github.com/dpakach/gorkin/parser"
 	"github.com/dpakach/gorkin/reporter"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"time"
 )
 
 func main() {
@@ -19,16 +19,16 @@ func main() {
 		os.Exit(1)
 	}
 	path := os.Args[1]
-	abs,err := filepath.Abs(path)
+	abs, err := filepath.Abs(path)
 	if err != nil {
-		log.Fatal(fmt.Errorf("Invalid path provided, Make sure the path %q is correct\n", path))
+		log.Fatal(fmt.Errorf("Invalid path provided, Make sure the path %q is correct", path))
 		os.Exit(1)
-    }
+	}
 	fi, err := os.Stat(abs)
 	if os.IsNotExist(err) {
-		log.Fatal(fmt.Errorf("Error, Make sure the path %q exists\n", path))
+		log.Fatal(fmt.Errorf("Error, Make sure the path %q exists", path))
 		os.Exit(1)
-    }
+	}
 
 	out := new(bytes.Buffer)
 	start := time.Now()

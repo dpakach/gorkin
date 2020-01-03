@@ -1,23 +1,25 @@
 package reporter
 
 import (
-	"io"
-	"github.com/dpakach/gorkin/parser"
 	"github.com/dpakach/gorkin/object"
+	"github.com/dpakach/gorkin/parser"
+	"io"
 )
 
+// ParseAndReport Parses the input Parser and writes the output in given writer
 func ParseAndReport(p *parser.Parser, out io.Writer) {
 	res := p.Parse()
 	if len(p.Errors()) != 0 {
 		io.WriteString(out, "Parser Errors: \n")
 		for _, err := range p.Errors() {
-			io.WriteString(out, err.GetMessage() + "\n")
+			io.WriteString(out, err.GetMessage()+"\n")
 		}
 	} else {
 		PrintResult(out, res)
 	}
 }
 
+// PrintResult Parses the input FeatureSet and writes the output in given writer
 func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 	for _, feature := range featureSet.Features {
 		io.WriteString(out, "\n")
@@ -28,7 +30,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 		io.WriteString(out, "Tags: ")
 		io.WriteString(out, "[")
 		for _, tag := range feature.Tags {
-			io.WriteString(out, " " + tag + " ")
+			io.WriteString(out, " "+tag+" ")
 		}
 		io.WriteString(out, "]")
 		io.WriteString(out, "\n\n\t")
@@ -66,7 +68,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 			io.WriteString(out, "Tags: ")
 			io.WriteString(out, "[")
 			for _, tag := range tags {
-				io.WriteString(out, " " + tag + " ")
+				io.WriteString(out, " "+tag+" ")
 			}
 			io.WriteString(out, "]")
 			io.WriteString(out, "\n\t\t")
@@ -77,6 +79,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 	}
 }
 
+// PrintSteps Parses the collection of Steps and writes the output in given writer
 func PrintSteps(out io.Writer, steps []object.Step) {
 	for _, step := range steps {
 		io.WriteString(out, "\n\t\t")
@@ -91,6 +94,7 @@ func PrintSteps(out io.Writer, steps []object.Step) {
 	}
 }
 
+// PrintTable Parses the Table and writes the output in given writer
 func PrintTable(out io.Writer, table object.Table) {
 	if len(table) > 0 {
 		io.WriteString(out, "\n\t\tTable:")

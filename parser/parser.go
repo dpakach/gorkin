@@ -8,26 +8,30 @@ import (
 	"strings"
 )
 
+// Parser is the Object that represents Parsing through lexer input
 type Parser struct {
 	l *lexer.Lexer
 
 	curToken  token.Token
 	peekToken token.Token
 
-	errors []ParserError
+	errors []ParsingError
 }
 
-type ParserError interface {
+// ParsingError is error object representing the Parsing errors
+type ParsingError interface {
 	GetMessage() string
 	parserErrorType()
 }
 
+// GeneralParserError is error object representing normal Parsing errors
 type GeneralParserError struct {
-    parser            Parser
-	LineNumber        int
-	Message string
+	parser     Parser
+	LineNumber int
+	Message    string
 }
 
+// GetMessage returns the formatted error message
 func (p *GeneralParserError) GetMessage() string {
 	return fmt.Sprintf(
 		"Parser Error: %v:%v %v",
@@ -35,18 +39,19 @@ func (p *GeneralParserError) GetMessage() string {
 		p.LineNumber,
 		p.Message,
 	)
-	return p.Message
 }
 
 func (p *GeneralParserError) parserErrorType() {}
 
+// PeekError is error object representing peek errors
 type PeekError struct {
 	parser            *Parser
 	LineNumber        int
-	ExpectedTokenType token.TokenType
+	ExpectedTokenType token.Type
 	ActualToken       token.Token
 }
 
+// GetMessage returns the formatted error message
 func (p *PeekError) GetMessage() string {
 	return fmt.Sprintf(
 		"Parser Error: %v:%v Expected token to be %q but got %q",
@@ -60,12 +65,13 @@ func (p *PeekError) GetMessage() string {
 func (p *PeekError) parserErrorType() {}
 
 // Parser Helper functions
-func (p *Parser) curTokenIs(t token.TokenType) bool {
+
+func (p *Parser) curTokenIs(t token.Type) bool {
 	return p.curToken.Type == t
 }
 
 func isStepToken(t token.Token) bool {
-	steps := []token.TokenType{
+	steps := []token.Type{
 		token.WHEN,
 		token.THEN,
 		token.GIVEN,
@@ -82,25 +88,25 @@ func isStepToken(t token.Token) bool {
 	return false
 }
 
-func (p *Parser) Errors() []ParserError {
+// Errors returns the errors in the parser
+func (p *Parser) Errors() []ParsingError {
 	return p.errors
 }
 
-func (p *Parser) peekTokenIs(t token.TokenType) bool {
+func (p *Parser) peekTokenIs(t token.Type) bool {
 	return p.peekToken.Type == t
 }
 
-func (p *Parser) expectPeek(t token.TokenType) bool {
+func (p *Parser) expectPeek(t token.Type) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
-	} else {
-		p.peekError(t)
-		return false
 	}
+	p.peekError(t)
+	return false
 }
 
-func (p *Parser) expectPeekTokens(tokens ...token.TokenType) bool {
+func (p *Parser) expectPeekTokens(tokens ...token.Type) bool {
 	for _, t := range tokens {
 		res := p.expectPeek(t)
 		if res == false {
@@ -110,7 +116,7 @@ func (p *Parser) expectPeekTokens(tokens ...token.TokenType) bool {
 	return true
 }
 
-func (p *Parser) peekError(t token.TokenType) {
+func (p *Parser) peekError(t token.Type) {
 	p.errors = append(p.errors, &PeekError{parser: p, LineNumber: p.peekToken.LineNumber, ExpectedTokenType: t})
 }
 
@@ -122,10 +128,11 @@ func (p *Parser) getParserErrors() []string {
 	return errors
 }
 
+// New creates a new Parser for given lexer
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
 		l:      l,
-		errors: []ParserError{},
+		errors: []ParsingError{},
 	}
 	p.nextToken()
 	p.nextToken()
@@ -139,12 +146,14 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) skipNewLines() {
-	for p.curTokenIs(token.NEW_LINE) || p.curTokenIs(token.COMMENT) {
+	for p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.COMMENT) {
 		p.nextToken()
 	}
 }
 
 // Parse Functions
+
+// Parse Parses the parser object and returns a featureSet
 func (p *Parser) Parse() *object.FeatureSet {
 
 	// TODO:Implement Parsing Multiple features from different Files
@@ -163,9 +172,10 @@ func (p *Parser) Parse() *object.FeatureSet {
 	return featureSet
 }
 
+// ParseFeature parses Feature from the current position in the parser
 func (p *Parser) ParseFeature() *object.Feature {
 	feature := &object.Feature{}
-	tags := []string{}
+	var tags []string
 	p.skipNewLines()
 	if p.curTokenIs(token.TAG) {
 		tags = p.ParseTags()
@@ -184,11 +194,11 @@ func (p *Parser) ParseFeature() *object.Feature {
 		return nil
 	}
 	p.nextToken()
-	if p.curTokenIs(token.STEP_BODY) {
+	if p.curTokenIs(token.STEPBODY) {
 		feature.Title = p.curToken.Literal
 	}
-	if !p.expectPeek(token.NEW_LINE) {
-		p.peekError(token.NEW_LINE)
+	if !p.expectPeek(token.NEWLINE) {
+		p.peekError(token.NEWLINE)
 		return nil
 	}
 	p.skipNewLines()
@@ -218,6 +228,7 @@ func (p *Parser) ParseFeature() *object.Feature {
 	return feature
 }
 
+// ParseBackground parses Background object from the current position in the parser
 func (p *Parser) ParseBackground() *object.Background {
 	p.skipNewLines()
 	background := &object.Background{}
@@ -225,7 +236,7 @@ func (p *Parser) ParseBackground() *object.Background {
 		p.peekError(token.BACKGROUND)
 		return nil
 	}
-	if !p.expectPeekTokens(token.COLON, token.NEW_LINE) {
+	if !p.expectPeekTokens(token.COLON, token.NEWLINE) {
 		return nil
 	}
 	p.skipNewLines()
@@ -243,6 +254,7 @@ func (p *Parser) ParseBackground() *object.Background {
 	return background
 }
 
+// ParseBlockSteps parses collection of Step from the current position in the parser
 func (p *Parser) ParseBlockSteps() []object.Step {
 	steps := []object.Step{}
 	p.skipNewLines()
@@ -258,6 +270,7 @@ func (p *Parser) ParseBlockSteps() []object.Step {
 	return steps
 }
 
+// ParseTags parses collection of Tag from the current position in the parser
 func (p *Parser) ParseTags() []string {
 	tags := []string{}
 	for p.curTokenIs(token.TAG) {
@@ -267,6 +280,7 @@ func (p *Parser) ParseTags() []string {
 	return tags
 }
 
+// ParseScenarioTypeSet parses collection of ScenarioType from the current position in the parser
 func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 	p.skipNewLines()
 	if !(p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG)) {
@@ -282,6 +296,7 @@ func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 	return scenarios
 }
 
+// ParseScenarioType parses a ScenarioType from the current position in the parser
 func (p *Parser) ParseScenarioType() object.ScenarioType {
 	tags := []string{}
 	p.skipNewLines()
@@ -307,7 +322,7 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 	}
 	p.nextToken()
 	var title string
-	for !p.curTokenIs(token.NEW_LINE) {
+	for !p.curTokenIs(token.NEWLINE) {
 		title += p.curToken.Literal
 		p.nextToken()
 	}
@@ -323,13 +338,13 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 			p.peekError(token.COLON)
 			return nil
 		}
-		if !p.expectPeek(token.NEW_LINE) {
-			p.peekError(token.NEW_LINE)
+		if !p.expectPeek(token.NEWLINE) {
+			p.peekError(token.NEWLINE)
 			return nil
 		}
 
 		p.skipNewLines()
-		if !p.curTokenIs(token.TABLE_DATA) {
+		if !p.curTokenIs(token.TABLEDATA) {
 			p.peekError(p.curToken.Type)
 			return nil
 		}
@@ -348,13 +363,14 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 	}
 }
 
+// ParseStep parses a Step from the current position in the parser
 func (p *Parser) ParseStep() *object.Step {
 	step := &object.Step{}
 	p.skipNewLines()
 	if token.IsStepToken(p.curToken.Type) {
 		step.Token = p.curToken
 		p.nextToken()
-		for !(p.curTokenIs(token.NEW_LINE) || p.curTokenIs(token.EOF)) {
+		for !(p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.EOF)) {
 			switch p.curToken.Type {
 			case token.NUMBER:
 				step.Data = append(step.Data, p.curToken.Literal)
@@ -376,7 +392,7 @@ func (p *Parser) ParseStep() *object.Step {
 		p.errors = append(p.errors, &GeneralParserError{parser: *p, LineNumber: p.curToken.LineNumber, Message: msg})
 		return nil
 	}
-	if p.curTokenIs(token.TABLE_DATA) {
+	if p.curTokenIs(token.TABLEDATA) {
 		table := p.ParseTable()
 		if table == nil {
 			return nil
@@ -391,19 +407,20 @@ func (p *Parser) ParseStep() *object.Step {
 	return step
 }
 
+// ParseTable parses a Table from the current position in the parser
 func (p *Parser) ParseTable() *object.Table {
 	var table object.Table
 	var tmp []string
 	p.skipNewLines()
-	if !p.curTokenIs(token.TABLE_DATA) {
-		p.peekError(token.TABLE_DATA)
+	if !p.curTokenIs(token.TABLEDATA) {
+		p.peekError(token.TABLEDATA)
 		return nil
 	}
-	for p.curTokenIs(token.TABLE_DATA) {
+	for p.curTokenIs(token.TABLEDATA) {
 		tmp = []string{}
-		for !(p.curTokenIs(token.NEW_LINE) || p.curTokenIs(token.EOF)) {
-			if !p.curTokenIs(token.TABLE_DATA) {
-				p.peekError(token.TABLE_DATA)
+		for !(p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.EOF)) {
+			if !p.curTokenIs(token.TABLEDATA) {
+				p.peekError(token.TABLEDATA)
 				return nil
 			}
 			tmp = append(tmp, p.curToken.Literal)

@@ -1,27 +1,30 @@
 package lexer
 
 import (
+	"github.com/dpakach/gorkin/token"
 	"io/ioutil"
 	"strings"
-	"github.com/dpakach/gorkin/token"
 )
 
+// Lexer is the Lexer object for reading through the Gherkin input
 type Lexer struct {
-	input string
-	position int
-	readPosition int
-	ch byte
+	input         string
+	position      int
+	readPosition  int
+	ch            byte
 	currentLineNo int
-	FilePath string
+	FilePath      string
 }
 
-func New(input string) * Lexer {
-	l := &Lexer{input: input, currentLineNo:1}
+// New Creates a new Lexer object for given input
+func New(input string) *Lexer {
+	l := &Lexer{input: input, currentLineNo: 1}
 	l.readChar()
 	return l
 }
 
-func NewFromFile(path string) * Lexer {
+// NewFromFile Creates a new Lexer object for given feature file
+func NewFromFile(path string) *Lexer {
 	dat, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -39,10 +42,10 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	l.position = l.readPosition
-	l.readPosition += 1
+	l.readPosition++
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
+func newToken(tokenType token.Type, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
@@ -82,9 +85,8 @@ func (l *Lexer) readNumber() string {
 func (l *Lexer) peekChar() byte {
 	if l.readPosition > len(l.input) {
 		return 0
-	} else {
-		return l.input[l.readPosition]
 	}
+	return l.input[l.readPosition]
 }
 
 func (l *Lexer) readString() string {
@@ -104,7 +106,7 @@ func (l *Lexer) readPyString() string {
 	for {
 		l.readChar()
 		if l.ch == '\n' {
-			l.currentLineNo += 1
+			l.currentLineNo++
 		}
 		if (l.ch == '"' && l.peekChar() == '"') || l.ch == 0 {
 			if l.peekChar() == '"' {
@@ -173,98 +175,99 @@ func (l *Lexer) readTableData() string {
 	return l.input[position:l.position]
 }
 
+// NextToken returns the next token in the lexer
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
 	switch l.ch {
-		case 0:
-			tok.Literal = token.EOF.String()
-			tok.Type = token.EOF
+	case 0:
+		tok.Literal = token.EOF.String()
+		tok.Type = token.EOF
+		l.readChar()
+	case '#':
+		l.readChar()
+		l.skipWhitespace()
+		body := l.readTillLineBreak()
+		tok.Type = token.COMMENT
+		tok.Literal = strings.TrimSpace(body)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
+		l.readChar()
+	case '"':
+		if l.peekChar() != '"' {
+			tok.Type = token.STRING
+			tok.Literal = l.readString()
 			l.readChar()
-		case '#':
+		} else {
 			l.readChar()
-			l.skipWhitespace()
-			body := l.readTillLineBreak()
-			tok.Type = token.COMMENT
-			tok.Literal = strings.TrimSpace(body)
-		case ':':
-			tok = newToken(token.COLON, l.ch)
-			l.readChar()
-		case '"':
 			if l.peekChar() != '"' {
 				tok.Type = token.STRING
-				tok.Literal = l.readString()
-				l.readChar()
-			} else {
-				l.readChar()
-				if l.peekChar() != '"' {
-					tok.Type = token.STRING
-					tok.Literal = ""
-					l.readChar()
-				} else {
-					tok.LineNumber = l.currentLineNo
-					l.readChar()
-					tok.Type = token.PYSTRING
-					tok.Literal = strings.TrimSpace(l.readPyString())
-					l.readChar()
-					l.readChar()
-					l.readChar()
-				}
-			}
-		case '@':
-			l.readChar()
-			tok.Type = token.TAG
-			word := l.readWord()
-			tok.Literal = word
-		case '\n':
-			l.readChar()
-			tok.Type = token.NEW_LINE
-			tok.Literal = token.NEW_LINE.String()
-		case '<':
-			word := l.readExampleValue()
-			tok.Type = token.TABLE_DATA
-			tok.Literal = word
-			l.readChar()
-		case '|':
-			l.readChar()
-			l.skipWhitespace()
-			if l.ch == '\n' {
-				tok.Type = token.NEW_LINE
-				tok.Literal = token.NEW_LINE.String()
-				l.readChar()
-			} else if l.ch == 0 {
-				tok.Type = token.EOF
-				tok.Literal = token.EOF.String()
-				l.readChar()
-			} else if l.ch == '|' {
-				tok.Type = token.TABLE_DATA
 				tok.Literal = ""
+				l.readChar()
 			} else {
-				tok.Type = token.TABLE_DATA
-				tok.Literal = strings.TrimSpace(l.readTableData())
+				tok.LineNumber = l.currentLineNo
+				l.readChar()
+				tok.Type = token.PYSTRING
+				tok.Literal = strings.TrimSpace(l.readPyString())
+				l.readChar()
+				l.readChar()
 				l.readChar()
 			}
-		default:
-			if isDigit(l.ch) {
-				tok.Literal = l.readNumber()
-				tok.Type = token.NUMBER
+		}
+	case '@':
+		l.readChar()
+		tok.Type = token.TAG
+		word := l.readWord()
+		tok.Literal = word
+	case '\n':
+		l.readChar()
+		tok.Type = token.NEWLINE
+		tok.Literal = token.NEWLINE.String()
+	case '<':
+		word := l.readExampleValue()
+		tok.Type = token.TABLEDATA
+		tok.Literal = word
+		l.readChar()
+	case '|':
+		l.readChar()
+		l.skipWhitespace()
+		if l.ch == '\n' {
+			tok.Type = token.NEWLINE
+			tok.Literal = token.NEWLINE.String()
+			l.readChar()
+		} else if l.ch == 0 {
+			tok.Type = token.EOF
+			tok.Literal = token.EOF.String()
+			l.readChar()
+		} else if l.ch == '|' {
+			tok.Type = token.TABLEDATA
+			tok.Literal = ""
+		} else {
+			tok.Type = token.TABLEDATA
+			tok.Literal = strings.TrimSpace(l.readTableData())
+			l.readChar()
+		}
+	default:
+		if isDigit(l.ch) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.NUMBER
+		} else {
+			word := l.readWord()
+			if key, ok := token.GherkinKeyword[word]; ok {
+				tok.Literal = word
+				tok.Type = key
 			} else {
-				word := l.readWord()
-				if key, ok := token.GherkinKeyword[word]; ok {
-					tok.Literal = word
-					tok.Type = key
-				} else {
-					body := l.readBody()
-					tok.Literal = strings.TrimSpace(word + body)
-					tok.Type = token.STEP_BODY
-				}
+				body := l.readBody()
+				tok.Literal = strings.TrimSpace(word + body)
+				tok.Type = token.STEPBODY
 			}
+		}
 	}
 	if tok.LineNumber == 0 {
 		tok.LineNumber = l.currentLineNo
 	}
-	if tok.Type == token.NEW_LINE {
-		l.currentLineNo += 1
+	if tok.Type == token.NEWLINE {
+		l.currentLineNo++
 	}
 	return tok
 }
