@@ -4,10 +4,13 @@ dist: xenial
 os: linux
 
 go:
-    - 1.13
+    - 1.13.5
     - 1.12
     - 1.11.x
     - master
+
+before_script:
+    - go get -u golang.org/x/lint/golint
 
 script:
     - diff -u <(echo -n) <(gofmt -d ./)

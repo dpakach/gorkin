@@ -175,7 +175,7 @@ func (p *Parser) Parse() *object.FeatureSet {
 // ParseFeature parses Feature from the current position in the parser
 func (p *Parser) ParseFeature() *object.Feature {
 	feature := &object.Feature{}
-	tags := []string{}
+	var tags []string
 	p.skipNewLines()
 	if p.curTokenIs(token.TAG) {
 		tags = p.ParseTags()
