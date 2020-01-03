@@ -1,30 +1,30 @@
 package lexer
 
 import (
+	"github.com/dpakach/gorkin/token"
 	"io/ioutil"
 	"strings"
-	"github.com/dpakach/gorkin/token"
 )
 
 // Lexer is the Lexer object for reading through the Gherkin input
 type Lexer struct {
-	input string
-	position int
-	readPosition int
-	ch byte
+	input         string
+	position      int
+	readPosition  int
+	ch            byte
 	currentLineNo int
-	FilePath string
+	FilePath      string
 }
 
 // New Creates a new Lexer object for given input
-func New(input string) * Lexer {
-	l := &Lexer{input: input, currentLineNo:1}
+func New(input string) *Lexer {
+	l := &Lexer{input: input, currentLineNo: 1}
 	l.readChar()
 	return l
 }
 
 // NewFromFile Creates a new Lexer object for given feature file
-func NewFromFile(path string) * Lexer {
+func NewFromFile(path string) *Lexer {
 	dat, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -180,88 +180,88 @@ func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
 	switch l.ch {
-		case 0:
-			tok.Literal = token.EOF.String()
-			tok.Type = token.EOF
+	case 0:
+		tok.Literal = token.EOF.String()
+		tok.Type = token.EOF
+		l.readChar()
+	case '#':
+		l.readChar()
+		l.skipWhitespace()
+		body := l.readTillLineBreak()
+		tok.Type = token.COMMENT
+		tok.Literal = strings.TrimSpace(body)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
+		l.readChar()
+	case '"':
+		if l.peekChar() != '"' {
+			tok.Type = token.STRING
+			tok.Literal = l.readString()
 			l.readChar()
-		case '#':
+		} else {
 			l.readChar()
-			l.skipWhitespace()
-			body := l.readTillLineBreak()
-			tok.Type = token.COMMENT
-			tok.Literal = strings.TrimSpace(body)
-		case ':':
-			tok = newToken(token.COLON, l.ch)
-			l.readChar()
-		case '"':
 			if l.peekChar() != '"' {
 				tok.Type = token.STRING
-				tok.Literal = l.readString()
+				tok.Literal = ""
 				l.readChar()
 			} else {
+				tok.LineNumber = l.currentLineNo
 				l.readChar()
-				if l.peekChar() != '"' {
-					tok.Type = token.STRING
-					tok.Literal = ""
-					l.readChar()
-				} else {
-					tok.LineNumber = l.currentLineNo
-					l.readChar()
-					tok.Type = token.PYSTRING
-					tok.Literal = strings.TrimSpace(l.readPyString())
-					l.readChar()
-					l.readChar()
-					l.readChar()
-				}
+				tok.Type = token.PYSTRING
+				tok.Literal = strings.TrimSpace(l.readPyString())
+				l.readChar()
+				l.readChar()
+				l.readChar()
 			}
-		case '@':
-			l.readChar()
-			tok.Type = token.TAG
-			word := l.readWord()
-			tok.Literal = word
-		case '\n':
-			l.readChar()
+		}
+	case '@':
+		l.readChar()
+		tok.Type = token.TAG
+		word := l.readWord()
+		tok.Literal = word
+	case '\n':
+		l.readChar()
+		tok.Type = token.NEWLINE
+		tok.Literal = token.NEWLINE.String()
+	case '<':
+		word := l.readExampleValue()
+		tok.Type = token.TABLEDATA
+		tok.Literal = word
+		l.readChar()
+	case '|':
+		l.readChar()
+		l.skipWhitespace()
+		if l.ch == '\n' {
 			tok.Type = token.NEWLINE
 			tok.Literal = token.NEWLINE.String()
-		case '<':
-			word := l.readExampleValue()
+			l.readChar()
+		} else if l.ch == 0 {
+			tok.Type = token.EOF
+			tok.Literal = token.EOF.String()
+			l.readChar()
+		} else if l.ch == '|' {
 			tok.Type = token.TABLEDATA
-			tok.Literal = word
+			tok.Literal = ""
+		} else {
+			tok.Type = token.TABLEDATA
+			tok.Literal = strings.TrimSpace(l.readTableData())
 			l.readChar()
-		case '|':
-			l.readChar()
-			l.skipWhitespace()
-			if l.ch == '\n' {
-				tok.Type = token.NEWLINE
-				tok.Literal = token.NEWLINE.String()
-				l.readChar()
-			} else if l.ch == 0 {
-				tok.Type = token.EOF
-				tok.Literal = token.EOF.String()
-				l.readChar()
-			} else if l.ch == '|' {
-				tok.Type = token.TABLEDATA
-				tok.Literal = ""
+		}
+	default:
+		if isDigit(l.ch) {
+			tok.Literal = l.readNumber()
+			tok.Type = token.NUMBER
+		} else {
+			word := l.readWord()
+			if key, ok := token.GherkinKeyword[word]; ok {
+				tok.Literal = word
+				tok.Type = key
 			} else {
-				tok.Type = token.TABLEDATA
-				tok.Literal = strings.TrimSpace(l.readTableData())
-				l.readChar()
+				body := l.readBody()
+				tok.Literal = strings.TrimSpace(word + body)
+				tok.Type = token.STEPBODY
 			}
-		default:
-			if isDigit(l.ch) {
-				tok.Literal = l.readNumber()
-				tok.Type = token.NUMBER
-			} else {
-				word := l.readWord()
-				if key, ok := token.GherkinKeyword[word]; ok {
-					tok.Literal = word
-					tok.Type = key
-				} else {
-					body := l.readBody()
-					tok.Literal = strings.TrimSpace(word + body)
-					tok.Type = token.STEPBODY
-				}
-			}
+		}
 	}
 	if tok.LineNumber == 0 {
 		tok.LineNumber = l.currentLineNo

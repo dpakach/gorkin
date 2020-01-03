@@ -1,19 +1,19 @@
 package parser
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 
-	"github.com/dpakach/gorkin/token"
-	"github.com/dpakach/gorkin/object"
 	"github.com/dpakach/gorkin/lexer"
+	"github.com/dpakach/gorkin/object"
+	"github.com/dpakach/gorkin/token"
 )
 
 type stepDataType struct {
-	input string
+	input         string
 	expectedToken token.Type
-	expectedBody string
-	expectedData []string
+	expectedBody  string
+	expectedData  []string
 	expectedTable object.Table
 }
 
@@ -24,7 +24,6 @@ const stepInput1 = `
 				| with | data   |
 				| 4    | 5      |
 				| and  | string |`
-
 
 const stepInput2 = `
 			Given some other step
@@ -178,37 +177,37 @@ func assertStepsEqual(t *testing.T, actual *object.Step, expected stepDataType) 
 }
 
 func areArrayEqual(a, b []string) bool {
-    if (a == nil) != (b == nil) {
-        return false;
-    }
+	if (a == nil) != (b == nil) {
+		return false
+	}
 
-    if len(a) != len(b) {
-        return false
-    }
+	if len(a) != len(b) {
+		return false
+	}
 
-    for i := range a {
+	for i := range a {
 		if a[i] != b[i] {
 			return false
 		}
-    }
-    return true
+	}
+	return true
 }
 
 func areTablesEqual(a, b object.Table) bool {
-    if (a == nil) != (b == nil) {
-        return false;
-    }
+	if (a == nil) != (b == nil) {
+		return false
+	}
 
-    if len(a) != len(b) {
-        return false
-    }
+	if len(a) != len(b) {
+		return false
+	}
 
-    for i := range a {
+	for i := range a {
 		if !areArrayEqual(a[i], b[i]) {
 			return false
 		}
-    }
-    return true
+	}
+	return true
 }
 
 func TestParsingBlockSteps(t *testing.T) {
@@ -268,7 +267,7 @@ func TestParseScenario(t *testing.T) {
 	for i, tt := range stepDataProvider["data1"] {
 		assertStepsEqual(t, &scenario.Steps[i], tt)
 	}
-	expectedTags := []string {"testTag", "randomTag"}
+	expectedTags := []string{"testTag", "randomTag"}
 	if !areArrayEqual(scenario.Tags, expectedTags) {
 		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
 	}
@@ -302,7 +301,7 @@ func TestParseScenarioOutline(t *testing.T) {
 	if !areArrayEqual(scenario.Tags, expectedTags) {
 		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
 	}
-	expectedTable := [][]string {
+	expectedTable := [][]string{
 		[]string{"data1", "data2"},
 		[]string{"value1", "v1"},
 		[]string{"value2", "5"},
@@ -360,19 +359,19 @@ func TestParseScenarioTypeSet(t *testing.T) {
 		t.Fatalf("Expected number of scenarios to be 3 but got %v", len(scenarios))
 	}
 	expected := []struct {
-		title string
+		title           string
 		dataProviderKey string
-	} {
+	}{
 		{
-			title: "Scenario test Case 1",
+			title:           "Scenario test Case 1",
 			dataProviderKey: "data1",
 		},
 		{
-			title: "another test",
+			title:           "another test",
 			dataProviderKey: "data2",
 		},
 		{
-			title: "test new",
+			title:           "test new",
 			dataProviderKey: "data3",
 		},
 	}
@@ -381,7 +380,6 @@ func TestParseScenarioTypeSet(t *testing.T) {
 		assertBlockStepsEqual(t, stepDataProvider[data.dataProviderKey], scenarios[i].(*object.Scenario).Steps)
 	}
 }
-
 
 func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 	input := fmt.Sprintf(`
@@ -412,24 +410,24 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 		t.Fatalf("Expected number of scenarios to be 3 but got %v", len(scenarios))
 	}
 	expected := []struct {
-		title string
+		title           string
 		dataProviderKey string
-		outline bool
-	} {
+		outline         bool
+	}{
 		{
-			title: "Scenario test Case 1",
+			title:           "Scenario test Case 1",
 			dataProviderKey: "data1",
-			outline: false,
+			outline:         false,
 		},
 		{
-			title: "another test",
+			title:           "another test",
 			dataProviderKey: "data2",
-			outline: false,
+			outline:         false,
 		},
 		{
-			title: "test new",
+			title:           "test new",
 			dataProviderKey: "data3",
-			outline: true,
+			outline:         true,
 		},
 	}
 
@@ -448,7 +446,7 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 			for i, tt := range stepDataProvider[data.dataProviderKey] {
 				assertStepsEqual(t, &scenario.Steps[i], tt)
 			}
-			expectedTable := [][]string {
+			expectedTable := [][]string{
 				[]string{"data"},
 				[]string{"row"},
 				[]string{"row1"},
@@ -514,19 +512,19 @@ func TestParsingFeature(t *testing.T) {
 		t.Fatalf("Expected number of scenarios to be 3 but got %v", len(scenarios))
 	}
 	expected := []struct {
-		title string
+		title           string
 		dataProviderKey string
-	} {
+	}{
 		{
-			title: "Scenario test Case 1",
+			title:           "Scenario test Case 1",
 			dataProviderKey: "data1",
 		},
 		{
-			title: "another test",
+			title:           "another test",
 			dataProviderKey: "data2",
 		},
 		{
-			title: "test new",
+			title:           "test new",
 			dataProviderKey: "data3",
 		},
 	}
@@ -595,19 +593,19 @@ func TestParsingFeatureSet(t *testing.T) {
 		t.Fatalf("Expected number of scenarios to be 3 but got %v", len(scenarios))
 	}
 	expected := []struct {
-		title string
+		title           string
 		dataProviderKey string
-	} {
+	}{
 		{
-			title: "Scenario test Case 1",
+			title:           "Scenario test Case 1",
 			dataProviderKey: "data1",
 		},
 		{
-			title: "another test",
+			title:           "another test",
 			dataProviderKey: "data2",
 		},
 		{
-			title: "test new",
+			title:           "test new",
 			dataProviderKey: "data3",
 		},
 	}

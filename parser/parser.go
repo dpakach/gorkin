@@ -26,9 +26,9 @@ type ParsingError interface {
 
 // GeneralParserError is error object representing normal Parsing errors
 type GeneralParserError struct {
-    parser            Parser
-	LineNumber        int
-	Message string
+	parser     Parser
+	LineNumber int
+	Message    string
 }
 
 // GetMessage returns the formatted error message

@@ -1,9 +1,9 @@
 package reporter
 
 import (
-	"io"
-	"github.com/dpakach/gorkin/parser"
 	"github.com/dpakach/gorkin/object"
+	"github.com/dpakach/gorkin/parser"
+	"io"
 )
 
 // ParseAndReport Parses the input Parser and writes the output in given writer
@@ -12,7 +12,7 @@ func ParseAndReport(p *parser.Parser, out io.Writer) {
 	if len(p.Errors()) != 0 {
 		io.WriteString(out, "Parser Errors: \n")
 		for _, err := range p.Errors() {
-			io.WriteString(out, err.GetMessage() + "\n")
+			io.WriteString(out, err.GetMessage()+"\n")
 		}
 	} else {
 		PrintResult(out, res)
@@ -30,7 +30,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 		io.WriteString(out, "Tags: ")
 		io.WriteString(out, "[")
 		for _, tag := range feature.Tags {
-			io.WriteString(out, " " + tag + " ")
+			io.WriteString(out, " "+tag+" ")
 		}
 		io.WriteString(out, "]")
 		io.WriteString(out, "\n\n\t")
@@ -68,7 +68,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 			io.WriteString(out, "Tags: ")
 			io.WriteString(out, "[")
 			for _, tag := range tags {
-				io.WriteString(out, " " + tag + " ")
+				io.WriteString(out, " "+tag+" ")
 			}
 			io.WriteString(out, "]")
 			io.WriteString(out, "\n\t\t")

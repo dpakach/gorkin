@@ -10,6 +10,7 @@ go:
     - master
 
 script:
+    - diff -u <(echo -n) <(gofmt -d ./)
     - golint ./...
     - go build ./cmd/gorkin
     - go test ./lexer

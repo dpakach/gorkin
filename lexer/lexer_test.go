@@ -4,7 +4,7 @@ import "testing"
 import "github.com/dpakach/gorkin/token"
 
 func TestNextToken(t *testing.T) {
-	input :=`
+	input := `
 	Feature: hello world
 
 	# this is a comment
@@ -43,10 +43,10 @@ func TestNextToken(t *testing.T) {
 		`
 
 	tests := []struct {
-		expectedType token.Type
+		expectedType    token.Type
 		expectedLiteral string
-		expectedLineNo int
-	} {
+		expectedLineNo  int
+	}{
 		{token.NEWLINE, token.NEWLINE.String(), 1},
 		{token.FEATURE, "Feature", 2},
 		{token.COLON, ":", 2},
@@ -82,47 +82,47 @@ func TestNextToken(t *testing.T) {
 		{token.THEN, "Then", 13},
 		{token.STEPBODY, "run test", 13},
 		{token.NEWLINE, token.NEWLINE.String(), 13},
-        {token.BUT, "But", 14},
-        {token.STEPBODY, "not fail test", 14},
-        {token.NEWLINE, token.NEWLINE.String(), 14},
+		{token.BUT, "But", 14},
+		{token.STEPBODY, "not fail test", 14},
+		{token.NEWLINE, token.NEWLINE.String(), 14},
 
-        {token.NEWLINE, token.NEWLINE.String(), 15},
-        {token.TAG, "smoke", 16},
-        {token.TAG, "anotherTag", 16},
-        {token.NEWLINE, token.NEWLINE.String(), 16},
-        {token.SCENARIO, "Scenario", 17},
-        {token.OUTLINE, "Outline", 17},
-        {token.COLON, ":", 17},
-        {token.STEPBODY, "Another Scenario", 17},
-        {token.NEWLINE, token.NEWLINE.String(), 17},
-        {token.GIVEN, "Given", 18},
-        {token.STEPBODY, "hello world is", 18},
-        {token.STRING, "big", 18},
-        {token.NEWLINE, token.NEWLINE.String(), 18},
-        {token.WHEN, "When", 19},
-        {token.STEPBODY, "test is", 19},
-        {token.NUMBER, "5", 19},
-        {token.STEPBODY, "times test", 19},
-        {token.NEWLINE, token.NEWLINE.String(), 19},
+		{token.NEWLINE, token.NEWLINE.String(), 15},
+		{token.TAG, "smoke", 16},
+		{token.TAG, "anotherTag", 16},
+		{token.NEWLINE, token.NEWLINE.String(), 16},
+		{token.SCENARIO, "Scenario", 17},
+		{token.OUTLINE, "Outline", 17},
+		{token.COLON, ":", 17},
+		{token.STEPBODY, "Another Scenario", 17},
+		{token.NEWLINE, token.NEWLINE.String(), 17},
+		{token.GIVEN, "Given", 18},
+		{token.STEPBODY, "hello world is", 18},
+		{token.STRING, "big", 18},
+		{token.NEWLINE, token.NEWLINE.String(), 18},
+		{token.WHEN, "When", 19},
+		{token.STEPBODY, "test is", 19},
+		{token.NUMBER, "5", 19},
+		{token.STEPBODY, "times test", 19},
+		{token.NEWLINE, token.NEWLINE.String(), 19},
 
-        {token.THEN, "Then", 20},
-        {token.TABLEDATA, "data1", 20},
-        {token.STEPBODY, "must be", 20},
-        {token.TABLEDATA, "data2", 20},
-        {token.NEWLINE, token.NEWLINE.String(), 20},
+		{token.THEN, "Then", 20},
+		{token.TABLEDATA, "data1", 20},
+		{token.STEPBODY, "must be", 20},
+		{token.TABLEDATA, "data2", 20},
+		{token.NEWLINE, token.NEWLINE.String(), 20},
 
-        {token.EXAMPLES, "Examples", 21},
-        {token.COLON, ":", 21},
-        {token.NEWLINE, token.NEWLINE.String(), 21},
-        {token.TABLEDATA, "data1", 22},
-        {token.TABLEDATA, "data2", 22},
-        {token.NEWLINE, token.NEWLINE.String(), 22},
-        {token.TABLEDATA, "value1", 23},
-        {token.TABLEDATA, "value2", 23},
-        {token.NEWLINE, token.NEWLINE.String(), 23},
-        {token.TABLEDATA, "val1", 24},
-        {token.TABLEDATA, "val2", 24},
-        {token.NEWLINE, token.NEWLINE.String(), 24},
+		{token.EXAMPLES, "Examples", 21},
+		{token.COLON, ":", 21},
+		{token.NEWLINE, token.NEWLINE.String(), 21},
+		{token.TABLEDATA, "data1", 22},
+		{token.TABLEDATA, "data2", 22},
+		{token.NEWLINE, token.NEWLINE.String(), 22},
+		{token.TABLEDATA, "value1", 23},
+		{token.TABLEDATA, "value2", 23},
+		{token.NEWLINE, token.NEWLINE.String(), 23},
+		{token.TABLEDATA, "val1", 24},
+		{token.TABLEDATA, "val2", 24},
+		{token.NEWLINE, token.NEWLINE.String(), 24},
 
 		{token.NEWLINE, token.NEWLINE.String(), 25},
 		{token.SCENARIO, "Scenario", 26},

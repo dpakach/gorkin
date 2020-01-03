@@ -5,8 +5,8 @@ type Type int
 
 // Token represents each token in parsing through Gherkin
 type Token struct {
-	Type Type
-	Literal string
+	Type       Type
+	Literal    string
 	LineNumber int
 }
 
@@ -75,16 +75,16 @@ func (token Type) String() string {
 	return "Illegal"
 }
 
-var keywords = map[string]Type {
-	"Feature": FEATURE,
-	"Scenario": SCENARIO,
-	"When": WHEN,
-	"Given": GIVEN,
-	"Then": THEN,
-	"But": BUT,
-	"And": AND,
-	"Outline": OUTLINE,
-	"Examples": EXAMPLES,
+var keywords = map[string]Type{
+	"Feature":    FEATURE,
+	"Scenario":   SCENARIO,
+	"When":       WHEN,
+	"Given":      GIVEN,
+	"Then":       THEN,
+	"But":        BUT,
+	"And":        AND,
+	"Outline":    OUTLINE,
+	"Examples":   EXAMPLES,
 	"Background": BACKGROUND,
 }
 
@@ -103,9 +103,9 @@ func LookupIdent(ident string) Type {
 func IsStepToken(t Type) bool {
 	stepTokens := []Type{GIVEN, WHEN, THEN, AND, BUT}
 	for _, step := range stepTokens {
-        if step == t {
-            return true
-        }
-    }
-    return false
+		if step == t {
+			return true
+		}
+	}
+	return false
 }
