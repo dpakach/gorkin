@@ -4,9 +4,13 @@ dist: xenial
 os: linux
 
 go:
-    - 1.13.5
+    - 1.13
+    - 1.12
+    - 1.11.x
+    - master
 
 script:
+    - golint ./...
     - go build ./cmd/gorkin
     - go test ./lexer
     - go test ./parser

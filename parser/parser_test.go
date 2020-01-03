@@ -11,7 +11,7 @@ import (
 
 type stepDataType struct {
 	input string
-	expectedToken token.TokenType
+	expectedToken token.Type
 	expectedBody string
 	expectedData []string
 	expectedTable object.Table
@@ -164,7 +164,7 @@ func TestStepParsing(t *testing.T) {
 
 func assertStepsEqual(t *testing.T, actual *object.Step, expected stepDataType) {
 	if actual.Token.Type != expected.expectedToken {
-		t.Fatalf("Expected TokenType to be %q, but got %q", expected.expectedToken, actual.Token.Type)
+		t.Fatalf("Expected Type to be %q, but got %q", expected.expectedToken, actual.Token.Type)
 	}
 	if actual.StepText != expected.expectedBody {
 		t.Fatalf("Expected step text to be %q, but got %q", expected.expectedBody, actual.StepText)

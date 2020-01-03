@@ -21,12 +21,12 @@ func main() {
 	path := os.Args[1]
 	abs,err := filepath.Abs(path)
 	if err != nil {
-		log.Fatal(fmt.Errorf("Invalid path provided, Make sure the path %q is correct\n", path))
+		log.Fatal(fmt.Errorf("Invalid path provided, Make sure the path %q is correct", path))
 		os.Exit(1)
     }
 	fi, err := os.Stat(abs)
 	if os.IsNotExist(err) {
-		log.Fatal(fmt.Errorf("Error, Make sure the path %q exists\n", path))
+		log.Fatal(fmt.Errorf("Error, Make sure the path %q exists", path))
 		os.Exit(1)
     }
 
