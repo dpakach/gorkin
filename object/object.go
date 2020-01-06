@@ -70,5 +70,27 @@ type Step struct {
 	LineNumber int
 }
 
+// TableData is a representation of a cell in a gherkin Table
+type TableData struct {
+	Literal    string
+	LineNumber int
+}
+
 // Table is a representation of any Table in Gherkin
-type Table [][]string
+type Table [][]TableData
+
+// TableFromString creates a Table type from given 2D string array
+func TableFromString(strTable [][]string, startingLine int) Table {
+	var res Table
+	var resRow []TableData
+	curLine := startingLine
+	for _, row := range strTable {
+		resRow = []TableData{}
+		for _, item := range row {
+			resRow = append(resRow, TableData{Literal: item, LineNumber: curLine})
+		}
+		res = append(res, resRow)
+		curLine++
+	}
+	return res
+}

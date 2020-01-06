@@ -70,6 +70,8 @@ func (token Type) String() string {
 		return "EOF"
 	case NEWLINE:
 		return "NEW_LINE"
+	case STEPBODY:
+		return "STEP_TEXT"
 	}
 
 	return "Illegal"

@@ -410,20 +410,20 @@ func (p *Parser) ParseStep() *object.Step {
 // ParseTable parses a Table from the current position in the parser
 func (p *Parser) ParseTable() *object.Table {
 	var table object.Table
-	var tmp []string
+	var tmp []object.TableData
 	p.skipNewLines()
 	if !p.curTokenIs(token.TABLEDATA) {
 		p.peekError(token.TABLEDATA)
 		return nil
 	}
 	for p.curTokenIs(token.TABLEDATA) {
-		tmp = []string{}
+		tmp = []object.TableData{}
 		for !(p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.EOF)) {
 			if !p.curTokenIs(token.TABLEDATA) {
 				p.peekError(token.TABLEDATA)
 				return nil
 			}
-			tmp = append(tmp, p.curToken.Literal)
+			tmp = append(tmp, object.TableData{p.curToken.Literal, p.curToken.LineNumber})
 			p.nextToken()
 		}
 
