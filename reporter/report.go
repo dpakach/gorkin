@@ -101,7 +101,7 @@ func PrintTable(out io.Writer, table object.Table) {
 		for _, row := range table {
 			io.WriteString(out, "\n\t\t\t")
 			for _, data := range row {
-				io.WriteString(out, data)
+				io.WriteString(out, data.Literal)
 				io.WriteString(out, "\t")
 			}
 		}

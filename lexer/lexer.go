@@ -30,7 +30,7 @@ func NewFromFile(path string) *Lexer {
 		panic(err)
 	}
 
-	l := &Lexer{input: string(dat), FilePath: path}
+	l := &Lexer{input: string(dat), FilePath: path, currentLineNo: 1}
 	l.readChar()
 	return l
 }

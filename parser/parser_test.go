@@ -17,32 +17,28 @@ type stepDataType struct {
 	expectedTable object.Table
 }
 
-const stepInput1 = `
-			Given some test step
-			Then some data is 5
-			But some "guy" has a table
-				| with | data   |
-				| 4    | 5      |
-				| and  | string |`
+const stepInput1 = `Given some test step
+					Then some data is 5
+					But some "guy" has a table
+						| with | data   |
+						| 4    | 5      |
+						| and  | string |`
 
-const stepInput2 = `
-			Given some other step
-			Then some "string" data
-			But also table with one row
-				| just |
-				| one  |
-				| row  |`
+const stepInput2 = `Given some other step
+					Then some "string" data
+					But also table with one row
+						| just |
+						| one  |
+						| row  |`
 
-const stepInput3 = `
-			When running tests
-			Then a basic step`
+const stepInput3 = `When running tests
+					Then a basic step`
 
-const stepInput4 = `
-			When running tests
-			"""
-			This is a basic pystring
-			multiline too
-			"""`
+const stepInput4 = `When running tests
+					"""
+					This is a basic pystring
+					multiline too
+					"""`
 
 var stepDataProvider = map[string][]stepDataType{
 	"data1": []stepDataType{
@@ -68,11 +64,11 @@ var stepDataProvider = map[string][]stepDataType{
 			token.BUT,
 			"some {{s}} has a table",
 			[]string{"guy"},
-			[][]string{
+			object.TableFromString([][]string{
 				[]string{"with", "data"},
 				[]string{"4", "5"},
 				[]string{"and", "string"},
-			},
+			}, 2),
 		},
 	},
 	"data2": []stepDataType{
@@ -98,11 +94,11 @@ var stepDataProvider = map[string][]stepDataType{
 			token.BUT,
 			"also table with one row",
 			nil,
-			[][]string{
+			object.TableFromString([][]string{
 				[]string{"just"},
 				[]string{"one"},
 				[]string{"row"},
-			},
+			}, 2),
 		},
 	},
 	"data3": []stepDataType{
@@ -129,7 +125,7 @@ var stepDataProvider = map[string][]stepDataType{
 			"running tests\n{{s}}",
 			[]string{
 				`This is a basic pystring
-			multiline too`,
+					multiline too`,
 			},
 			nil,
 		},
@@ -172,7 +168,7 @@ func assertStepsEqual(t *testing.T, actual *object.Step, expected stepDataType) 
 		t.Fatalf("Expected table to be %q, but got %q", expected.expectedTable, actual.Table)
 	}
 	if expected.expectedData != nil && !areArrayEqual(actual.Data, expected.expectedData) {
-		t.Fatalf("Expected table to be %q, but got %q", expected.expectedData, actual.Data)
+		t.Fatalf("Expected Data to be %q, but got %q", expected.expectedData, actual.Data)
 	}
 }
 
@@ -203,8 +199,22 @@ func areTablesEqual(a, b object.Table) bool {
 	}
 
 	for i := range a {
-		if !areArrayEqual(a[i], b[i]) {
+		if (a[i] == nil) != (b[i] == nil) {
 			return false
+		}
+
+		if len(a[i]) != len(b[i]) {
+			return false
+		}
+
+		for j := range a[i] {
+			if a[i][j].Literal != b[i][j].Literal {
+				return false
+			}
+			// skipping for now
+			//if a[i][j].LineNumber != b[i][j].LineNumber {
+			//	return false
+			//}
 		}
 	}
 	return true
@@ -301,11 +311,11 @@ func TestParseScenarioOutline(t *testing.T) {
 	if !areArrayEqual(scenario.Tags, expectedTags) {
 		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
 	}
-	expectedTable := [][]string{
+	expectedTable := object.TableFromString([][]string{
 		[]string{"data1", "data2"},
 		[]string{"value1", "v1"},
 		[]string{"value2", "5"},
-	}
+	}, 5)
 
 	if !areTablesEqual(expectedTable, scenario.Table) {
 		t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable, scenario.Table)
@@ -446,11 +456,11 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 			for i, tt := range stepDataProvider[data.dataProviderKey] {
 				assertStepsEqual(t, &scenario.Steps[i], tt)
 			}
-			expectedTable := [][]string{
+			expectedTable := object.TableFromString([][]string{
 				[]string{"data"},
 				[]string{"row"},
 				[]string{"row1"},
-			}
+			}, 22)
 
 			if !areTablesEqual(expectedTable, scenario.Table) {
 				t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable, scenario.Table)
