@@ -380,6 +380,9 @@ func (p *Parser) ParseStep() *object.Step {
 				step.Data = append(step.Data, p.curToken.Literal)
 				step.StepText = step.StepText + " {{s}} "
 				p.nextToken()
+			case token.EXAMPLEVALUE:
+				step.StepText = step.StepText + fmt.Sprintf(" {{<%v>}} ", p.curToken.Literal)
+				p.nextToken()
 			default:
 				step.StepText = step.StepText + p.curToken.Literal
 				p.nextToken()

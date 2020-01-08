@@ -6,7 +6,6 @@ os: linux
 go:
     - 1.13.5
     - 1.12
-    - 1.11.x
     - master
 
 before_script:
@@ -16,5 +15,6 @@ script:
     - diff -u <(echo -n) <(gofmt -d ./)
     - golint ./...
     - go build ./cmd/gorkin
-    - go test ./lexer
-    - go test ./parser
+    - go test ./lexer -v
+    - go test ./object -v
+    - go test ./parser -v

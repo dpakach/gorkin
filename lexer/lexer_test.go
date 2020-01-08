@@ -106,9 +106,9 @@ func TestNextToken(t *testing.T) {
 		{token.NEWLINE, token.NEWLINE.String(), 19},
 
 		{token.THEN, "Then", 20},
-		{token.TABLEDATA, "data1", 20},
+		{token.EXAMPLEVALUE, "data1", 20},
 		{token.STEPBODY, "must be", 20},
-		{token.TABLEDATA, "data2", 20},
+		{token.EXAMPLEVALUE, "data2", 20},
 		{token.NEWLINE, token.NEWLINE.String(), 20},
 
 		{token.EXAMPLES, "Examples", 21},
