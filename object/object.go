@@ -21,6 +21,7 @@ type Object interface {
 // This may include simple scenarios and scenario outlines
 type ScenarioType interface {
 	scenarioTypeObject()
+	GetTags() []string
 }
 
 // FeatureSet is a collection of multiple Features
@@ -57,6 +58,9 @@ type Scenario struct {
 
 func (s *Scenario) scenarioTypeObject() {}
 
+// GetTags returns tags in the given scenario
+func (s *Scenario) GetTags() []string { return s.Tags }
+
 // ScenarioOutline is representation of a scenario outline object
 type ScenarioOutline struct {
 	Steps        []Step
@@ -67,6 +71,9 @@ type ScenarioOutline struct {
 }
 
 func (so *ScenarioOutline) scenarioTypeObject() {}
+
+// GetTags returns tags in the given scenario outline
+func (so *ScenarioOutline) GetTags() []string { return so.Tags }
 
 func (so *ScenarioOutline) getScenarios() []Scenario {
 	var scenarios []Scenario
