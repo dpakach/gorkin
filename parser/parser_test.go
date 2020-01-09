@@ -34,7 +34,7 @@ const stepInput2 = `Given some other step
 const stepInput3 = `When running tests
 					Then a basic step`
 
-const stepInput4 = `When running tests
+const stepInput4 = `When running tests with <example>
 					"""
 					This is a basic pystring
 					multiline too
@@ -122,7 +122,7 @@ var stepDataProvider = map[string][]stepDataType{
 		{
 			stepInput4,
 			token.WHEN,
-			"running tests\n{{s}}",
+			"running tests with {{<example>}}\n{{s}}",
 			[]string{
 				`This is a basic pystring
 					multiline too`,
@@ -173,6 +173,23 @@ func assertStepsEqual(t *testing.T, actual *object.Step, expected stepDataType) 
 }
 
 func areArrayEqual(a, b []string) bool {
+	if (a == nil) != (b == nil) {
+		return false
+	}
+
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func areMapEqual(a, b map[string]string) bool {
 	if (a == nil) != (b == nil) {
 		return false
 	}
@@ -622,5 +639,47 @@ func TestParsingFeatureSet(t *testing.T) {
 
 	for i, data := range expected {
 		assertBlockStepsEqual(t, stepDataProvider[data.dataProviderKey], scenarios[i].(*object.Scenario).Steps)
+	}
+}
+
+func TestTableGetRows(t *testing.T) {
+	input := `| with | data   |
+			| 4    | 5      |
+			| and  | string |`
+	expectedTable := object.TableFromString([][]string{
+		[]string{"with", "data"},
+		[]string{"4", "5"},
+		[]string{"and", "string"},
+	}, 1)
+	expectedHash := []map[string]string{
+		map[string]string{"with": "4", "data": "5"},
+		map[string]string{"with": "and", "data": "string"},
+	}
+	l := lexer.New(input)
+	p := New(l)
+	parsed := p.ParseTable()
+	checkParserErrors(t, p)
+
+	if !areTablesEqual(*parsed, expectedTable) {
+		t.Fatalf("Expected table to be %v but got %v", expectedTable, parsed)
+	}
+
+	if len(parsed.GetHash()) != 2 {
+		t.Fatalf("Expected table hash length to be %v but got %v", 2, len(parsed.GetHash()))
+	}
+	for i, item := range parsed.GetHash() {
+		if !areMapEqual(item, expectedHash[i]) {
+			t.Fatalf("Expected table hash to be %v but got %v", expectedHash[i], item)
+		}
+	}
+
+	for i, row := range expectedTable {
+		parsedRow, err := parsed.GetRow(i)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !areTablesEqual([][]object.TableData{row}, [][]object.TableData{parsedRow}) {
+			t.Fatalf("Expected table row to be %v but got %v", row, parsedRow)
+		}
 	}
 }

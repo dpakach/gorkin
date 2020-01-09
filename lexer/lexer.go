@@ -225,7 +225,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = token.NEWLINE.String()
 	case '<':
 		word := l.readExampleValue()
-		tok.Type = token.TABLEDATA
+		tok.Type = token.EXAMPLEVALUE
 		tok.Literal = word
 		l.readChar()
 	case '|':
