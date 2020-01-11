@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/dpakach/gorkin/object"
+	"github.com/dpakach/gorkin/utils"
 )
 
 // Filter interface is used to filter scenarios and features
@@ -49,7 +50,7 @@ func (tf *TagFilter) MatchScenario(scenario object.ScenarioType) bool {
 }
 
 func (tf *TagFilter) tagsMatchPresent(tags []string) bool {
-	if areArrayEqual(tags, []string{}) && !areArrayEqual(tf.getTags(), []string{}) {
+	if utils.AreArrayEqual(tags, []string{}) && !utils.AreArrayEqual(tf.getTags(), []string{}) {
 		return false
 	}
 	for _, tag := range tags {

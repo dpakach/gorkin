@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dpakach/gorkin/token"
+	"github.com/dpakach/gorkin/utils"
 )
 
 type objectType string
@@ -140,7 +141,7 @@ func (s *Step) recompileText() {
 					break
 				}
 			}
-			s.StepText = replaceNth(s.StepText, string(digits), "{{d}}", 1)
+			s.StepText = utils.ReplaceNth(s.StepText, string(digits), "{{d}}", 1)
 
 			// Add new Number to the Data array
 			s.Data = append(s.Data, "")
@@ -153,23 +154,6 @@ func (s *Step) recompileText() {
 			}
 		}
 	}
-}
-
-// Replace the nth occurrence of old in s by new.
-func replaceNth(s, old, new string, n int) string {
-	i := 0
-	for m := 1; m <= n; m++ {
-		x := strings.Index(s[i:], old)
-		if x < 0 {
-			break
-		}
-		i += x
-		if m == n {
-			return s[:i] + new + s[i+len(old):]
-		}
-		i += len(old)
-	}
-	return s
 }
 
 func (s *Step) substituteExampleTable(row map[string]string) *Step {
