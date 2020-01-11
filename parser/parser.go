@@ -189,6 +189,7 @@ func (p *Parser) ParseFeature() *object.Feature {
 		p.peekError(token.FEATURE)
 		return nil
 	}
+	feature.Token = p.curToken
 	if !p.expectPeek(token.COLON) {
 		p.peekError(token.COLON)
 		return nil

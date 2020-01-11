@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/dpakach/gorkin/token"
+	"github.com/dpakach/gorkin/utils"
 )
 
 type objectType string
@@ -21,6 +22,7 @@ type Object interface {
 // This may include simple scenarios and scenario outlines
 type ScenarioType interface {
 	scenarioTypeObject()
+	GetTags() []string
 }
 
 // FeatureSet is a collection of multiple Features
@@ -57,6 +59,9 @@ type Scenario struct {
 
 func (s *Scenario) scenarioTypeObject() {}
 
+// GetTags returns tags in the given scenario
+func (s *Scenario) GetTags() []string { return s.Tags }
+
 // ScenarioOutline is representation of a scenario outline object
 type ScenarioOutline struct {
 	Steps        []Step
@@ -67,6 +72,9 @@ type ScenarioOutline struct {
 }
 
 func (so *ScenarioOutline) scenarioTypeObject() {}
+
+// GetTags returns tags in the given scenario outline
+func (so *ScenarioOutline) GetTags() []string { return so.Tags }
 
 func (so *ScenarioOutline) getScenarios() []Scenario {
 	var scenarios []Scenario
@@ -133,7 +141,7 @@ func (s *Step) recompileText() {
 					break
 				}
 			}
-			s.StepText = replaceNth(s.StepText, string(digits), "{{d}}", 1)
+			s.StepText = utils.ReplaceNth(s.StepText, string(digits), "{{d}}", 1)
 
 			// Add new Number to the Data array
 			s.Data = append(s.Data, "")
@@ -146,23 +154,6 @@ func (s *Step) recompileText() {
 			}
 		}
 	}
-}
-
-// Replace the nth occurrence of old in s by new.
-func replaceNth(s, old, new string, n int) string {
-	i := 0
-	for m := 1; m <= n; m++ {
-		x := strings.Index(s[i:], old)
-		if x < 0 {
-			break
-		}
-		i += x
-		if m == n {
-			return s[:i] + new + s[i+len(old):]
-		}
-		i += len(old)
-	}
-	return s
 }
 
 func (s *Step) substituteExampleTable(row map[string]string) *Step {

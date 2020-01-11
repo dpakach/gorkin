@@ -15,6 +15,7 @@ script:
     - diff -u <(echo -n) <(gofmt -d ./)
     - golint ./...
     - go build ./cmd/gorkin
+    - go test ./filter -v
     - go test ./lexer -v
     - go test ./object -v
     - go test ./parser -v
