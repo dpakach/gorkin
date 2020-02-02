@@ -70,7 +70,7 @@ func TestGetTags(t *testing.T) {
 	}
 }
 
-func TesttagMatchPresent(t *testing.T) {
+func TestTagMatchPresent(t *testing.T) {
 	testdata := []struct {
 		input     string
 		inputTags []string
