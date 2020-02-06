@@ -307,7 +307,7 @@ func TestGetScenarios(t *testing.T) {
 		},
 	}
 
-	scenarios := scenarioOutline.getScenarios()
+	scenarios := scenarioOutline.GetScenarios()
 
 	assertScenariosEqual(t, &expectedScenarios[0], &scenarios[0])
 	assertScenariosEqual(t, &expectedScenarios[1], &scenarios[1])

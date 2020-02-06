@@ -70,7 +70,7 @@ func TestGetTags(t *testing.T) {
 	}
 }
 
-func TesttagMatchPresent(t *testing.T) {
+func TestTagMatchPresent(t *testing.T) {
 	testdata := []struct {
 		input     string
 		inputTags []string
@@ -86,7 +86,7 @@ func TesttagMatchPresent(t *testing.T) {
 		{"~@tag1&&@tag2&&~@tag3", []string{"tag1", "tag3"}, false},
 
 		{"@tag1", []string{"tag1"}, true},
-		{"@tag1", []string{}, true},
+		{"@tag1", []string{}, false},
 		{"~@tag1", []string{"tag1"}, false},
 		{"@tag1", []string{"tag2"}, false},
 	}
