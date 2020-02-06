@@ -364,6 +364,10 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 	}
 }
 
+func isDataType(check token.Token) bool {
+	return check.Type == token.NUMBER || check.Type == token.STRING || check.Type == token.EXAMPLEVALUE
+}
+
 // ParseStep parses a Step from the current position in the parser
 func (p *Parser) ParseStep() *object.Step {
 	step := &object.Step{}
@@ -375,14 +379,23 @@ func (p *Parser) ParseStep() *object.Step {
 			switch p.curToken.Type {
 			case token.NUMBER:
 				step.Data = append(step.Data, p.curToken.Literal)
-				step.StepText = step.StepText + " {{d}} "
+				step.StepText = step.StepText + " {{d}}"
+				if !isDataType(p.peekToken) {
+					step.StepText += " "
+				}
 				p.nextToken()
 			case token.STRING:
 				step.Data = append(step.Data, p.curToken.Literal)
-				step.StepText = step.StepText + " {{s}} "
+				step.StepText = step.StepText + " {{s}}"
+				if !isDataType(p.peekToken) {
+					step.StepText += " "
+				}
 				p.nextToken()
 			case token.EXAMPLEVALUE:
-				step.StepText = step.StepText + fmt.Sprintf(" {{<%v>}} ", p.curToken.Literal)
+				step.StepText = step.StepText + fmt.Sprintf(" {{<%v>}}", p.curToken.Literal)
+				if !isDataType(p.peekToken) {
+					step.StepText += " "
+				}
 				p.nextToken()
 			default:
 				step.StepText = step.StepText + p.curToken.Literal
