@@ -163,15 +163,24 @@ func (s *Step) recompileText() {
 
 func (s *Step) substituteExampleTable(row map[string]string) *Step {
 	var step = &Step{}
-	*step = *s
+
+	step.Token = s.Token
+	step.StepText = s.StepText
+	step.LineNumber = s.LineNumber
+
 	step.Table = make([][]TableData, len(s.Table))
+
+	step.Data = []string{}
+	for _, data := range s.Data {
+		step.Data = append(step.Data, data)
+	}
 
 	// First substitute the {{<data>}} from the step.StepText
 	r := regexp.MustCompile("{{<[a-zA-Z0-9_]*>}}")
 	if r.MatchString(s.StepText) {
 		sup := r.FindString(s.StepText)
 		sup = sup[3 : len(sup)-3]
-		step.StepText = strings.ReplaceAll(s.StepText, fmt.Sprintf("{{<%v>}}", sup), row[sup])
+		step.StepText = strings.ReplaceAll(step.StepText, fmt.Sprintf("{{<%v>}}", sup), row[sup])
 		step.recompileText()
 	}
 
@@ -181,7 +190,7 @@ func (s *Step) substituteExampleTable(row map[string]string) *Step {
 		if r.MatchString(data) {
 			sup := r.FindString(data)
 			sup = sup[1 : len(sup)-1]
-			step.Data[i] = strings.ReplaceAll(step.Data[i], fmt.Sprintf("<%v>", sup), row[sup])
+			step.Data[i] = strings.ReplaceAll(data, fmt.Sprintf("<%v>", sup), row[sup])
 		}
 	}
 

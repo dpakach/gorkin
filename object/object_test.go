@@ -107,6 +107,25 @@ func TestTableGetRows(t *testing.T) {
 	}
 }
 
+// When There is step <with> an "<data>"
+//  | <with> | 5      |
+//  | <data> | string |
+//
+// Examples:
+//  | with | data   |
+//  | 4    | 5      |
+//  | and  | string |
+//
+// Result:
+// When There is step 4 an "5"
+//  | 4 | 5      |
+//  | 5 | string |
+//
+// When There is step and an "string"
+//  | and    | 5      |
+//  | string | string |
+//
+
 func TestSubstituteTable(t *testing.T) {
 	table := TableFromString([][]string{
 		[]string{"<with>", "5"},
@@ -202,6 +221,12 @@ func assertScenariosEqual(t *testing.T, expected, actual *Scenario) {
 	}
 }
 
+// Given some test step <with>
+// Then some data is "5"
+// Then some "<with>" has table
+//   | <with> | 5      |
+//   | and    | <data> |
+
 var stepDataProvider = []Step{
 	{
 		token.Token{token.GIVEN, "Given", 1},
@@ -228,6 +253,17 @@ var stepDataProvider = []Step{
 		3,
 	},
 }
+
+// Given some test step <with>
+// Then some data is "5"
+// Then some "<with>" has table
+//   | <with> | 5      |
+//   | and    | <data> |
+//
+// Examples:
+//    | with | data   |
+//    | 4    | 5      |
+//    | and  | string |
 
 func TestGetScenarios(t *testing.T) {
 	scenarioOutline := &ScenarioOutline{
@@ -297,7 +333,7 @@ func TestGetScenarios(t *testing.T) {
 						[]string{"and", "5"},
 						[]string{"and", "string"},
 					}, 4),
-					[]string{"4"},
+					[]string{"and"},
 					3,
 				},
 			},
