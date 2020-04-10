@@ -312,6 +312,7 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 		p.peekError(token.SCENARIO)
 		return nil
 	}
+	lineNumber := p.curToken.LineNumber
 	outLineType := false
 	if p.peekTokenIs(token.OUTLINE) {
 		outLineType = true
@@ -355,12 +356,14 @@ func (p *Parser) ParseScenarioType() object.ScenarioType {
 			Tags:         tags,
 			ScenarioText: title,
 			Table:        *table,
+			LineNumber:   lineNumber,
 		}
 	}
 	return &object.Scenario{
 		Steps:        steps,
 		Tags:         tags,
 		ScenarioText: title,
+		LineNumber:   lineNumber,
 	}
 }
 
