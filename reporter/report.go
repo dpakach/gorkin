@@ -4,6 +4,8 @@ import (
 	"github.com/dpakach/gorkin/object"
 	"github.com/dpakach/gorkin/parser"
 	"io"
+	"strconv"
+	"fmt"
 )
 
 // ParseAndReport Parses the input Parser and writes the output in given writer
@@ -44,6 +46,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 		var steps []object.Step
 		var table object.Table
 		var tags []string
+		var lineNumber int
 		for _, scenario := range feature.Scenarios {
 			io.WriteString(out, "\n\tScenario")
 			outlineObj, ok := scenario.(*object.ScenarioOutline)
@@ -54,16 +57,19 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 				titleString = outlineObj.ScenarioText
 				steps = outlineObj.Steps
 				table = outlineObj.Table
-
+				lineNumber = outlineObj.LineNumber
 			} else {
 				scenarioObj := scenario.(*object.Scenario)
 				io.WriteString(out, ":\n\t\t")
 				tags = scenarioObj.Tags
 				titleString = scenarioObj.ScenarioText
 				steps = scenarioObj.Steps
+				lineNumber = scenarioObj.LineNumber
 			}
 			io.WriteString(out, "Title: ")
 			io.WriteString(out, titleString)
+			io.WriteString(out, ":")
+			io.WriteString(out, strconv.Itoa(lineNumber))
 			io.WriteString(out, "\n\t\t")
 			io.WriteString(out, "Tags: ")
 			io.WriteString(out, "[")
@@ -96,6 +102,7 @@ func PrintSteps(out io.Writer, steps []object.Step) {
 
 // PrintTable Parses the Table and writes the output in given writer
 func PrintTable(out io.Writer, table object.Table) {
+	fmt.Println(table)
 	if len(table) > 0 {
 		io.WriteString(out, "\n\t\tTable:")
 		for _, row := range table {

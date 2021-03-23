@@ -146,7 +146,7 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) skipNewLines() {
-	for p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.COMMENT) {
+	for (p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.COMMENT)) {
 		p.nextToken()
 	}
 }
@@ -436,8 +436,11 @@ func (p *Parser) ParseTable() *object.Table {
 		p.peekError(token.TABLEDATA)
 		return nil
 	}
+	fmt.Println("Parsing Table\n\n\n\n\n*******")
+	// fmt.Println(p.curToken)
 	for p.curTokenIs(token.TABLEDATA) {
 		tmp = []object.TableData{}
+		fmt.Println(p.curToken)
 		for !(p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.EOF)) {
 			if !p.curTokenIs(token.TABLEDATA) {
 				p.peekError(token.TABLEDATA)
@@ -449,7 +452,7 @@ func (p *Parser) ParseTable() *object.Table {
 
 		table = append(table, tmp)
 		p.nextToken()
-
+		p.skipNewLines()
 	}
 	return &table
 }

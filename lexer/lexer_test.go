@@ -2,6 +2,7 @@ package lexer
 
 import "testing"
 import "github.com/dpakach/gorkin/token"
+import "fmt"
 
 func TestNextToken(t *testing.T) {
 	input := `
@@ -26,7 +27,7 @@ func TestNextToken(t *testing.T) {
 		Then <data1> must be <data2>
 		Examples:
 		| data1  | data2  |
-		| value1 | value2 |
+		| value1 | value2 | # test comment
 		| val1   | val2   |
 
 	Scenario Outline: Third Scenario
@@ -38,7 +39,11 @@ func TestNextToken(t *testing.T) {
 		Then something happens
 		| val1   |  |
 		Examples:
-		| value1 | value2 |
+		| value_1 | value_2 |
+		# some comment here
+		| val1   | val2   |
+
+		# more comment here
 		| val1   | val2   |
 		`
 
@@ -119,6 +124,7 @@ func TestNextToken(t *testing.T) {
 		{token.NEWLINE, token.NEWLINE.String(), 22},
 		{token.TABLEDATA, "value1", 23},
 		{token.TABLEDATA, "value2", 23},
+		{token.COMMENT, "test comment", 23},
 		{token.NEWLINE, token.NEWLINE.String(), 23},
 		{token.TABLEDATA, "val1", 24},
 		{token.TABLEDATA, "val2", 24},
@@ -145,19 +151,30 @@ func TestNextToken(t *testing.T) {
 		{token.EXAMPLES, "Examples", 34},
 		{token.COLON, ":", 34},
 		{token.NEWLINE, token.NEWLINE.String(), 34},
-		{token.TABLEDATA, "value1", 35},
-		{token.TABLEDATA, "value2", 35},
+		{token.TABLEDATA, "value_1", 35},
+		{token.TABLEDATA, "value_2", 35},
 		{token.NEWLINE, token.NEWLINE.String(), 35},
-		{token.TABLEDATA, "val1", 36},
-		{token.TABLEDATA, "val2", 36},
+		{token.COMMENT, "some comment here", 36},
 		{token.NEWLINE, token.NEWLINE.String(), 36},
-		{token.EOF, token.EOF.String(), 37},
+		{token.TABLEDATA, "val1", 37},
+		{token.TABLEDATA, "val2", 37},
+		{token.NEWLINE, token.NEWLINE.String(), 37},
+
+		{token.NEWLINE, token.NEWLINE.String(), 38},
+		{token.COMMENT, "more comment here", 39},
+		{token.NEWLINE, token.NEWLINE.String(), 39},
+		{token.TABLEDATA, "val1", 40},
+		{token.TABLEDATA, "val2", 40},
+		{token.NEWLINE, token.NEWLINE.String(), 40},
+
+		{token.EOF, token.EOF.String(), 41},
 	}
 
 	l := New(input)
 
 	for i, tt := range tests {
 		tok := l.NextToken()
+		fmt.Println(tok.Type, tt)
 		if tok.Type != tt.expectedType {
 			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, tt.expectedType, tok.Type)
 		}

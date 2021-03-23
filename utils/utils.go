@@ -3,7 +3,6 @@ package utils
 import (
 	"strings"
 )
-
 // AreArrayEqual returns if given two array of strings are equal
 func AreArrayEqual(a, b []string) bool {
 	if len(a) == 0 {
