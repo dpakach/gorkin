@@ -63,6 +63,7 @@ func (s *Scenario) scenarioTypeObject() {}
 // GetTags returns tags in the given scenario
 func (s *Scenario) GetTags() []string { return s.Tags }
 
+// GetScenarios returns scenarios as an array
 func (s *Scenario) GetScenarios() []Scenario {
 	return []Scenario{*s}
 }
@@ -81,6 +82,7 @@ func (so *ScenarioOutline) scenarioTypeObject() {}
 // GetTags returns tags in the given scenario outline
 func (so *ScenarioOutline) GetTags() []string { return so.Tags }
 
+// GetScenarios returns scenarios as an array
 func (so *ScenarioOutline) GetScenarios() []Scenario {
 	var scenarios []Scenario
 	var steps []Step
@@ -254,4 +256,9 @@ func (t *Table) GetHash() []map[string]string {
 	}
 
 	return hash
+}
+
+// Append adds given array of TableData to table
+func (t *Table) Append(rows [][]TableData) {
+	*t = append(*t, rows...)
 }
