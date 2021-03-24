@@ -72,6 +72,24 @@ func (token Type) String() string {
 		return "NEW_LINE"
 	case STEPBODY:
 		return "STEP_TEXT"
+	case COMMENT:
+		return "COMMENT"
+	case STRING:
+		return "STRING"
+	case NUMBER:
+		return "NUMBER"
+	case COLON:
+		return "COLON"
+	case PYSTRING:
+		return "PYSTRING"
+	case TAG:
+		return "TAG"
+	case EXAMPLEVALUE:
+		return "EXAMPLEVALUE"
+	case TABLEDATA:
+		return "TABLEDATA"
+	case LINETEXT:
+		return "LINETEXT"
 	}
 
 	return "Illegal"

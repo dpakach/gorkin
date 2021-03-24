@@ -6,8 +6,8 @@ import "fmt"
 
 func TestNextToken(t *testing.T) {
 	input := `
-	Feature: hello world
-
+	Feature: hello world 42
+	test feature
 	# this is a comment
 	# this is another comment
 
@@ -26,9 +26,9 @@ func TestNextToken(t *testing.T) {
 		When test is 5 times test
 		Then <data1> must be <data2>
 		Examples:
-		| data1  | data2  |
-		| value1 | value2 | # test comment
-		| val1   | val2   |
+		| dat//a1  | data2  |
+		| value1 | ?abc=oc g%rp#  | # test comment
+		| val1   | # val2   |
 
 	Scenario Outline: Third Scenario
 		Given step has some pystrings
@@ -45,6 +45,11 @@ func TestNextToken(t *testing.T) {
 
 		# more comment here
 		| val1   | val2   |
+
+		@newTag
+		Examples:
+		| value_1 | value_2 |
+		| val1   | val2   |
 		`
 
 	tests := []struct {
@@ -56,8 +61,9 @@ func TestNextToken(t *testing.T) {
 		{token.FEATURE, "Feature", 2},
 		{token.COLON, ":", 2},
 		{token.STEPBODY, "hello world", 2},
+		{token.NUMBER, "42", 2},
 		{token.NEWLINE, token.NEWLINE.String(), 2},
-
+		{token.STEPBODY, "test feature", 3},
 		{token.NEWLINE, token.NEWLINE.String(), 3},
 		{token.COMMENT, "this is a comment", 4},
 		{token.NEWLINE, token.NEWLINE.String(), 4},
@@ -119,15 +125,15 @@ func TestNextToken(t *testing.T) {
 		{token.EXAMPLES, "Examples", 21},
 		{token.COLON, ":", 21},
 		{token.NEWLINE, token.NEWLINE.String(), 21},
-		{token.TABLEDATA, "data1", 22},
+		{token.TABLEDATA, "dat//a1", 22},
 		{token.TABLEDATA, "data2", 22},
 		{token.NEWLINE, token.NEWLINE.String(), 22},
 		{token.TABLEDATA, "value1", 23},
-		{token.TABLEDATA, "value2", 23},
+		{token.TABLEDATA, "?abc=oc g%rp#", 23},
 		{token.COMMENT, "test comment", 23},
 		{token.NEWLINE, token.NEWLINE.String(), 23},
 		{token.TABLEDATA, "val1", 24},
-		{token.TABLEDATA, "val2", 24},
+		{token.TABLEDATA, "# val2", 24},
 		{token.NEWLINE, token.NEWLINE.String(), 24},
 
 		{token.NEWLINE, token.NEWLINE.String(), 25},
@@ -166,8 +172,21 @@ func TestNextToken(t *testing.T) {
 		{token.TABLEDATA, "val1", 40},
 		{token.TABLEDATA, "val2", 40},
 		{token.NEWLINE, token.NEWLINE.String(), 40},
+		{token.NEWLINE, token.NEWLINE.String(), 41},
 
-		{token.EOF, token.EOF.String(), 41},
+		{token.TAG, "newTag", 42},
+		{token.NEWLINE, token.NEWLINE.String(), 42},
+
+		{token.EXAMPLES, token.EXAMPLES.String(), 43},
+		{token.COLON, ":", 43},
+		{token.NEWLINE, token.NEWLINE.String(), 43},
+		{token.TABLEDATA, "value_1", 44},
+		{token.TABLEDATA, "value_2", 44},
+		{token.NEWLINE, token.NEWLINE.String(), 44},
+		{token.TABLEDATA, "val1", 45},
+		{token.TABLEDATA, "val2", 45},
+		{token.NEWLINE, token.NEWLINE.String(), 45},
+		{token.EOF, token.EOF.String(), 46},
 	}
 
 	l := New(input)

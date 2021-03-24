@@ -1,9 +1,10 @@
 package lexer
 
 import (
-	"github.com/dpakach/gorkin/token"
 	"io/ioutil"
 	"strings"
+
+	"github.com/dpakach/gorkin/token"
 )
 
 // Lexer is the Lexer object for reading through the Gherkin input
@@ -218,6 +219,17 @@ func (l *Lexer) NextToken() token.Token {
 		l.readChar()
 		tok.Type = token.TAG
 		word := l.readWord()
+		// fmt.Println(string(l.ch))
+		for {
+			if l.ch == ':' {
+				word = word + string(l.ch)
+				l.readChar()
+				newWord := l.readWord()
+				word = word + newWord
+			} else {
+				break
+			}
+		}
 		tok.Literal = word
 	case '\n':
 		l.readChar()
@@ -239,6 +251,24 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.EOF
 			tok.Literal = token.EOF.String()
 			l.readChar()
+		} else if l.ch == '#' {
+
+			l.readChar()
+			position := l.position
+
+			for {
+				if l.ch != '\n' && l.ch != '|' {
+					l.readChar()
+				} else if l.ch == '\n' {
+					tok.Type = token.COMMENT
+					tok.Literal = strings.TrimSpace(l.input[position:l.position])
+					break
+				} else {
+					tok.Type = token.TABLEDATA
+					tok.Literal = strings.TrimSpace(l.input[position-1 : l.position])
+					break
+				}
+			}
 		} else if l.ch == '|' {
 			tok.Type = token.TABLEDATA
 			tok.Literal = ""

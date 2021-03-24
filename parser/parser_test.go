@@ -281,7 +281,7 @@ func TestParseScenario(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 
-	res := p.ParseScenarioType()
+	res := p.ParseScenarioType([]string{})
 	checkParserErrors(t, p)
 	scenario, ok := res.(*object.Scenario)
 	if !ok {
@@ -311,7 +311,7 @@ func TestParseScenarioOutline(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 
-	res := p.ParseScenarioType()
+	res := p.ParseScenarioType([]string{})
 	checkParserErrors(t, p)
 	scenario, ok := res.(*object.ScenarioOutline)
 	if !ok {

@@ -146,7 +146,7 @@ func (p *Parser) nextToken() {
 }
 
 func (p *Parser) skipNewLines() {
-	for (p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.COMMENT)) {
+	for p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.COMMENT) {
 		p.nextToken()
 	}
 }
@@ -195,13 +195,11 @@ func (p *Parser) ParseFeature() *object.Feature {
 		return nil
 	}
 	p.nextToken()
-	if p.curTokenIs(token.STEPBODY) {
-		feature.Title = p.curToken.Literal
+	for !p.curTokenIs(token.NEWLINE) {
+		feature.Title += p.curToken.Literal
+		p.nextToken()
 	}
-	if !p.expectPeek(token.NEWLINE) {
-		p.peekError(token.NEWLINE)
-		return nil
-	}
+
 	p.skipNewLines()
 
 	for !(p.curTokenIs(token.BACKGROUND) ||
@@ -277,6 +275,7 @@ func (p *Parser) ParseTags() []string {
 	for p.curTokenIs(token.TAG) {
 		tags = append(tags, p.curToken.Literal)
 		p.nextToken()
+		p.skipNewLines()
 	}
 	return tags
 }
@@ -289,16 +288,54 @@ func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 		return nil
 	}
 	scenarios := []object.ScenarioType{}
+	lastTags := []string{}
 	for p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG) {
-		scenarios = append(scenarios, p.ParseScenarioType())
+		scenarios = append(scenarios, p.ParseScenarioType(lastTags))
 		p.skipNewLines()
+
+		var extraTable object.Table
+		for {
+			if !(p.curTokenIs(token.TAG) || p.curTokenIs(token.EXAMPLES)) {
+				break
+			}
+			if p.curTokenIs(token.TAG) {
+				lastTags = p.ParseTags()
+			}
+			p.skipNewLines()
+
+			if !p.curTokenIs(token.EXAMPLES) {
+				break
+			}
+
+			if !p.expectPeek(token.COLON) {
+				p.peekError(token.COLON)
+				return nil
+			}
+			p.nextToken()
+			p.skipNewLines()
+			itable := p.ParseTable().GetRows()
+
+			extraTable.Append(itable[1:])
+
+			// TODO: dont ignore tags here
+			lastTags = []string{}
+			p.skipNewLines()
+
+			lastScenario := scenarios[len(scenarios)-1]
+			lastOutline, ok := lastScenario.(*object.ScenarioOutline)
+			if !ok {
+				panic("invalid type")
+			}
+			lastOutline.Table.Append(extraTable.GetRows())
+		}
+
 	}
 	p.skipNewLines()
 	return scenarios
 }
 
 // ParseScenarioType parses a ScenarioType from the current position in the parser
-func (p *Parser) ParseScenarioType() object.ScenarioType {
+func (p *Parser) ParseScenarioType(lastTags []string) object.ScenarioType {
 	tags := []string{}
 	p.skipNewLines()
 	if p.curTokenIs(token.TAG) {
@@ -436,12 +473,12 @@ func (p *Parser) ParseTable() *object.Table {
 		p.peekError(token.TABLEDATA)
 		return nil
 	}
-	fmt.Println("Parsing Table\n\n\n\n\n*******")
-	// fmt.Println(p.curToken)
+
 	for p.curTokenIs(token.TABLEDATA) {
+
 		tmp = []object.TableData{}
-		fmt.Println(p.curToken)
 		for !(p.curTokenIs(token.NEWLINE) || p.curTokenIs(token.EOF)) {
+
 			if !p.curTokenIs(token.TABLEDATA) {
 				p.peekError(token.TABLEDATA)
 				return nil
