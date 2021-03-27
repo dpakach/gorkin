@@ -340,25 +340,33 @@ func TestParseScenarioOutline(t *testing.T) {
 }
 
 func TestParseBackground(t *testing.T) {
-	input := fmt.Sprintf(`
-	Background:
-		%v
-	`, stepInput1)
-	l := lexer.New(input)
-	p := New(l)
-
-	background := p.ParseBackground()
-	checkParserErrors(t, p)
-	if background == nil {
-		t.Fatal("Expected background but got nil.")
-	}
-	if len(background.Steps) != 3 {
-		t.Fatalf("Number of steps mismatch, expected 3, got %v", len(background.Steps))
-	}
-	for i, tt := range stepDataProvider["data1"] {
-		assertStepsEqual(t, &background.Steps[i], tt)
+	backgrounds := []string{
+		fmt.Sprintf(`
+		Background:
+			%v
+		`, stepInput1),
+		fmt.Sprintf(`
+		Background: background with some text
+			%v
+		`, stepInput1),
 	}
 
+	for _, input := range backgrounds {
+		l := lexer.New(input)
+		p := New(l)
+
+		background := p.ParseBackground()
+		checkParserErrors(t, p)
+		if background == nil {
+			t.Fatal("Expected background but got nil.")
+		}
+		if len(background.Steps) != 3 {
+			t.Fatalf("Number of steps mismatch, expected 3, got %v", len(background.Steps))
+		}
+		for i, tt := range stepDataProvider["data1"] {
+			assertStepsEqual(t, &background.Steps[i], tt)
+		}
+	}
 }
 
 func TestParseScenarioTypeSet(t *testing.T) {

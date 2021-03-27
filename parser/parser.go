@@ -235,8 +235,12 @@ func (p *Parser) ParseBackground() *object.Background {
 		p.peekError(token.BACKGROUND)
 		return nil
 	}
-	if !p.expectPeekTokens(token.COLON, token.NEWLINE) {
+	if !p.expectPeekTokens(token.COLON) {
 		return nil
+	}
+	p.nextToken()
+	if p.curTokenIs(token.STEPBODY) {
+		p.nextToken()
 	}
 	p.skipNewLines()
 	if !isStepToken(p.curToken) {

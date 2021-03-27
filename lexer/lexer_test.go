@@ -11,7 +11,7 @@ func TestNextToken(t *testing.T) {
 	# this is a comment
 	# this is another comment
 
-	Background:
+	Background: simple background
 		Given step is parsed
 
 	Scenario: Test Scenario
@@ -73,6 +73,7 @@ func TestNextToken(t *testing.T) {
 		{token.NEWLINE, token.NEWLINE.String(), 6},
 		{token.BACKGROUND, "Background", 7},
 		{token.COLON, ":", 7},
+		{token.STEPBODY, "simple background", 7},
 		{token.NEWLINE, token.NEWLINE.String(), 7},
 		{token.GIVEN, "Given", 8},
 		{token.STEPBODY, "step is parsed", 8},
