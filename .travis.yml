@@ -4,9 +4,11 @@ dist: xenial
 os: linux
 
 go:
-    - 1.13.5
-    - 1.12
-    - master
+    - stable
+    - 1.16
+    - 1.15
+    - 1.14
+    - 1.13
 
 before_script:
     - go get -u golang.org/x/lint/golint
