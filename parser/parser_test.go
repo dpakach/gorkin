@@ -334,8 +334,135 @@ func TestParseScenarioOutline(t *testing.T) {
 		[]string{"value2", "5"},
 	}, 5)
 
-	if !areTablesEqual(expectedTable, scenario.Table) {
-		t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable, scenario.Table)
+	if !areTablesEqual(expectedTable, scenario.Tables[0]) {
+		t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable, scenario.Tables[0])
+	}
+}
+
+func TestParseScenarioOutlineMultipleExamples(t *testing.T) {
+	input := fmt.Sprintf(`
+	Scenario Outline: test Scenario
+		%v
+
+	@tag1 @tag-hello
+	Examples:
+		| data1  | data2 |
+		| value1 | v1    |
+
+	@tag2 @tag-world
+	Examples:
+		| data1  | data2 |
+		| value2 | 5     |
+	`, stepInput1)
+	l := lexer.New(input)
+	p := New(l)
+
+	res := p.ParseScenarioType([]string{})
+	checkParserErrors(t, p)
+	scenario, ok := res.(*object.ScenarioOutline)
+	if !ok {
+		t.Fatalf("Type mismatch, expected Scenario but not got")
+	}
+	if len(scenario.Steps) != 3 {
+		t.Fatalf("Steps length mismatch, expected 3, got %v", len(scenario.Steps))
+	}
+
+	for i, tt := range stepDataProvider["data1"] {
+		assertStepsEqual(t, &scenario.Steps[i], tt)
+	}
+	expectedTags := []string{}
+	if !areArrayEqual(scenario.Tags, expectedTags) {
+		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
+	}
+	expectedTable := []object.Table{
+		object.TableFromString([][]string{
+			{"data1", "data2"},
+			{"value1", "v1"},
+		}, 5),
+		object.TableFromString([][]string{
+			{"data1", "data2"},
+			{"value2", "5"},
+		}, 5),
+	}
+
+	for i, table := range scenario.Tables {
+		if !areTablesEqual(expectedTable[i], table) {
+			t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable[i], table)
+		}
+	}
+
+	expectedTableTags := [][]string{
+		{"tag1", "tag-hello"},
+		{"tag2", "tag-world"},
+	}
+
+	for i, table := range scenario.TableTags {
+		if !areArrayEqual(expectedTableTags[i], table) {
+			t.Fatalf("Table tags mismatch, expected %v, got %v", expectedTableTags[i], table)
+		}
+	}
+}
+
+func TestParseScenarioOutlineMultipleExamples2(t *testing.T) {
+	input := fmt.Sprintf(`
+	Scenario Outline: test Scenario
+		%v
+
+	Examples:
+		| data1  | data2 |
+		| value1 | v1    |
+
+	@tag2 @tagworld
+	Examples:
+		| data1  | data2 |
+		| value2 | 5     |
+	`, stepInput1)
+	l := lexer.New(input)
+	p := New(l)
+
+	res := p.ParseScenarioType([]string{})
+	checkParserErrors(t, p)
+	scenario, ok := res.(*object.ScenarioOutline)
+	if !ok {
+		t.Fatalf("Type mismatch, expected Scenario but not got")
+	}
+	if len(scenario.Steps) != 3 {
+		t.Fatalf("Steps length mismatch, expected 3, got %v", len(scenario.Steps))
+	}
+
+	for i, tt := range stepDataProvider["data1"] {
+		assertStepsEqual(t, &scenario.Steps[i], tt)
+	}
+	expectedTags := []string{}
+	if !areArrayEqual(scenario.Tags, expectedTags) {
+		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
+	}
+	expectedTable := []object.Table{
+		object.TableFromString([][]string{
+			{"data1", "data2"},
+			{"value1", "v1"},
+		}, 5),
+		object.TableFromString([][]string{
+			{"data1", "data2"},
+			{"value2", "5"},
+		}, 5),
+	}
+
+	for i, table := range scenario.Tables {
+		if !areTablesEqual(expectedTable[i], table) {
+			t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable[i], table)
+		}
+	}
+
+	expectedTableTags := [][]string{
+		{},
+		{"tag2", "tagworld"},
+	}
+
+	for i, table := range scenario.TableTags {
+		if !areArrayEqual(expectedTableTags[i], table) {
+			t.Fatalf("Table tags mismatch, expected %v, got %v", expectedTableTags[i], table)
+		}
 	}
 }
 
@@ -481,14 +608,18 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 			for i, tt := range stepDataProvider[data.dataProviderKey] {
 				assertStepsEqual(t, &scenario.Steps[i], tt)
 			}
-			expectedTable := object.TableFromString([][]string{
-				[]string{"data"},
-				[]string{"row"},
-				[]string{"row1"},
-			}, 22)
+			expectedTable := []object.Table{
+				object.TableFromString([][]string{
+					{"data"},
+					{"row"},
+					{"row1"},
+				}, 22),
+			}
 
-			if !areTablesEqual(expectedTable, scenario.Table) {
-				t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable, scenario.Table)
+			for i, table := range scenario.Tables {
+				if !areTablesEqual(expectedTable[i], table) {
+					t.Fatalf("Tables mismatch, expected %v, got %v", expectedTable[i], table)
+				}
 			}
 		}
 	}

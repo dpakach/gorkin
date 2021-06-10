@@ -60,7 +60,7 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 				io.WriteString(out, "\n")
 				for _, s := range outlineObj.GetScenarios() {
 					steps = outlineObj.Steps
-					table = outlineObj.Table
+					tables := outlineObj.Tables
 					lineNumber = s.LineNumber
 					io.WriteString(out, "\t\tTitle: ")
 					io.WriteString(out, titleString)
@@ -75,7 +75,9 @@ func PrintResult(out io.Writer, featureSet *object.FeatureSet) {
 					io.WriteString(out, "]")
 					io.WriteString(out, "\n\t\t\t\t")
 					PrintSteps(out, steps, 4)
-					PrintTable(out, table)
+					for _, table := range tables {
+						PrintTable(out, table)
+					}
 					io.WriteString(out, "\n\t")
 				}
 			} else {
