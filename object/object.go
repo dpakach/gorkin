@@ -74,7 +74,8 @@ type ScenarioOutline struct {
 	Tags         []string
 	ScenarioText string
 	LineNumber   int
-	Table        Table
+	Tables       []Table
+	TableTags    [][]string
 }
 
 func (so *ScenarioOutline) scenarioTypeObject() {}
@@ -86,16 +87,19 @@ func (so *ScenarioOutline) GetTags() []string { return so.Tags }
 func (so *ScenarioOutline) GetScenarios() []Scenario {
 	var scenarios []Scenario
 	var steps []Step
-	for i, row := range so.Table.GetHash() {
-		line := so.Table[i+1][0].LineNumber
-		steps = []Step{}
-		for _, step := range so.Steps {
-			steps = append(steps, *step.substituteExampleTable(row))
+	for j, table := range so.Tables {
+		for i, row := range table.GetHash() {
+			line := table[i+1][0].LineNumber
+			steps = []Step{}
+			for _, step := range so.Steps {
+				steps = append(steps, *step.substituteExampleTable(row))
+			}
+			newTags := append(so.Tags, so.TableTags[j]...)
+			scenarios = append(
+				scenarios,
+				Scenario{steps, newTags, so.ScenarioText, line},
+			)
 		}
-		scenarios = append(
-			scenarios,
-			Scenario{steps, so.Tags, so.ScenarioText, line},
-		)
 	}
 	return scenarios
 }

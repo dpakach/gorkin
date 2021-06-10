@@ -271,11 +271,14 @@ func TestGetScenarios(t *testing.T) {
 		[]string{},
 		"Test Scenario",
 		1,
-		TableFromString([][]string{
-			[]string{"with", "data"},
-			[]string{"4", "5"},
-			[]string{"and", "string"},
-		}, 4),
+		[]Table{
+			TableFromString([][]string{
+				[]string{"with", "data"},
+				[]string{"4", "5"},
+				[]string{"and", "string"},
+			}, 4),
+		},
+		[][]string{{}},
 	}
 
 	expectedScenarios := []Scenario{

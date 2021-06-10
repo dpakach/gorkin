@@ -330,7 +330,7 @@ func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 			if !ok {
 				panic("invalid type")
 			}
-			lastOutline.Table.Append(extraTable.GetRows())
+			lastOutline.Tables[len(lastOutline.Tables) - 1].Append(extraTable.GetRows())
 		}
 
 	}
@@ -372,32 +372,61 @@ func (p *Parser) ParseScenarioType(lastTags []string) object.ScenarioType {
 	p.skipNewLines()
 	steps := p.ParseBlockSteps()
 	if outLineType {
-		p.skipNewLines()
-		if !p.curTokenIs(token.EXAMPLES) {
-			p.peekError(token.EXAMPLES)
-			return nil
-		}
-		if !p.expectPeek(token.COLON) {
-			p.peekError(token.COLON)
-			return nil
-		}
-		if !p.expectPeek(token.NEWLINE) {
-			p.peekError(token.NEWLINE)
-			return nil
-		}
+		tableTags := [][]string{}
+		tables := []object.Table{}
 
 		p.skipNewLines()
-		if !p.curTokenIs(token.TABLEDATA) {
-			p.peekError(p.curToken.Type)
-			return nil
+
+		for {
+			p.skipNewLines()
+			if (!(p.curTokenIs(token.TAG) || p.curTokenIs(token.EXAMPLES))) {
+				if (len(tables) < 1) {
+					return nil
+				}
+				break
+			}
+
+			if p.curTokenIs(token.TAG) {
+				tableTag := p.ParseTags()
+				if tableTag == nil {
+					return nil
+				}
+				p.skipNewLines()
+				tableTags = append(tableTags, tableTag)
+			} else {
+				tableTags = append(tableTags, []string{})
+			}
+
+			if !p.curTokenIs(token.EXAMPLES) {
+				p.peekError(token.EXAMPLES)
+				return nil
+			}
+			if !p.expectPeek(token.COLON) {
+				p.peekError(token.COLON)
+				return nil
+			}
+			if !p.expectPeek(token.NEWLINE) {
+				p.peekError(token.NEWLINE)
+				return nil
+			}
+
+			p.skipNewLines()
+			if !p.curTokenIs(token.TABLEDATA) {
+				p.peekError(p.curToken.Type)
+				return nil
+			}
+
+			table := p.ParseTable()
+			tables = append(tables, *table)
 		}
-		table := p.ParseTable()
+
 		return &object.ScenarioOutline{
 			Steps:        steps,
 			Tags:         tags,
 			ScenarioText: title,
-			Table:        *table,
+			Tables:       tables,
 			LineNumber:   lineNumber,
+			TableTags:    tableTags,
 		}
 	}
 	return &object.Scenario{
