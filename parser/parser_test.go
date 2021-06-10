@@ -374,7 +374,7 @@ func TestParseScenarioOutlineMultipleExamples(t *testing.T) {
 	if !areArrayEqual(scenario.Tags, expectedTags) {
 		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
 	}
-	expectedTable := []object.Table {
+	expectedTable := []object.Table{
 		object.TableFromString([][]string{
 			{"data1", "data2"},
 			{"value1", "v1"},
@@ -391,7 +391,7 @@ func TestParseScenarioOutlineMultipleExamples(t *testing.T) {
 		}
 	}
 
-	expectedTableTags := [][]string {
+	expectedTableTags := [][]string{
 		{"tag1", "tag-hello"},
 		{"tag2", "tag-world"},
 	}
@@ -437,7 +437,7 @@ func TestParseScenarioOutlineMultipleExamples2(t *testing.T) {
 	if !areArrayEqual(scenario.Tags, expectedTags) {
 		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, scenario.Tags)
 	}
-	expectedTable := []object.Table {
+	expectedTable := []object.Table{
 		object.TableFromString([][]string{
 			{"data1", "data2"},
 			{"value1", "v1"},
@@ -454,7 +454,7 @@ func TestParseScenarioOutlineMultipleExamples2(t *testing.T) {
 		}
 	}
 
-	expectedTableTags := [][]string {
+	expectedTableTags := [][]string{
 		{},
 		{"tag2", "tagworld"},
 	}
@@ -465,7 +465,6 @@ func TestParseScenarioOutlineMultipleExamples2(t *testing.T) {
 		}
 	}
 }
-
 
 func TestParseBackground(t *testing.T) {
 	backgrounds := []string{
@@ -609,7 +608,7 @@ func TestParseScenarioTypeSetWithOutline(t *testing.T) {
 			for i, tt := range stepDataProvider[data.dataProviderKey] {
 				assertStepsEqual(t, &scenario.Steps[i], tt)
 			}
-			expectedTable := []object.Table {
+			expectedTable := []object.Table{
 				object.TableFromString([][]string{
 					{"data"},
 					{"row"},

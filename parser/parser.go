@@ -330,7 +330,7 @@ func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 			if !ok {
 				panic("invalid type")
 			}
-			lastOutline.Tables[len(lastOutline.Tables) - 1].Append(extraTable.GetRows())
+			lastOutline.Tables[len(lastOutline.Tables)-1].Append(extraTable.GetRows())
 		}
 
 	}
@@ -379,8 +379,8 @@ func (p *Parser) ParseScenarioType(lastTags []string) object.ScenarioType {
 
 		for {
 			p.skipNewLines()
-			if (!(p.curTokenIs(token.TAG) || p.curTokenIs(token.EXAMPLES))) {
-				if (len(tables) < 1) {
+			if !(p.curTokenIs(token.TAG) || p.curTokenIs(token.EXAMPLES)) {
+				if len(tables) < 1 {
 					return nil
 				}
 				break
