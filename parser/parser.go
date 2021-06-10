@@ -294,56 +294,42 @@ func (p *Parser) ParseScenarioTypeSet() []object.ScenarioType {
 	scenarios := []object.ScenarioType{}
 	lastTags := []string{}
 	for p.curTokenIs(token.SCENARIO) || p.curTokenIs(token.TAG) {
-		scenarios = append(scenarios, p.ParseScenarioType(lastTags))
+		lastScenario := p.ParseScenarioType(lastTags)
+		if lastScenario == nil {
+			return nil
+		}
+		scenarios = append(scenarios, lastScenario)
 		p.skipNewLines()
 
-		var extraTable object.Table
-		for {
-			if !(p.curTokenIs(token.TAG) || p.curTokenIs(token.EXAMPLES)) {
-				break
-			}
-			if p.curTokenIs(token.TAG) {
-				lastTags = p.ParseTags()
-			}
-			p.skipNewLines()
-
-			if !p.curTokenIs(token.EXAMPLES) {
-				break
-			}
-
-			if !p.expectPeek(token.COLON) {
-				p.peekError(token.COLON)
+		lastOutline, ok := lastScenario.(*object.ScenarioOutline)
+		if !ok {
+			lastTags = []string{}
+			continue
+		}
+		if len(lastOutline.TableTags) != len(lastOutline.Tables) {
+			if len(lastOutline.TableTags) != len(lastOutline.Tables)+1 {
 				return nil
 			}
-			p.nextToken()
-			p.skipNewLines()
-			itable := p.ParseTable().GetRows()
 
-			extraTable.Append(itable[1:])
-
-			// TODO: dont ignore tags here
+			lastTags = lastOutline.TableTags[len(lastOutline.TableTags)-1]
+			lastOutline.TableTags = lastOutline.TableTags[:len(lastOutline.TableTags)-1]
+		} else {
 			lastTags = []string{}
-			p.skipNewLines()
-
-			lastScenario := scenarios[len(scenarios)-1]
-			lastOutline, ok := lastScenario.(*object.ScenarioOutline)
-			if !ok {
-				panic("invalid type")
-			}
-			lastOutline.Tables[len(lastOutline.Tables)-1].Append(extraTable.GetRows())
 		}
-
 	}
-	p.skipNewLines()
+
 	return scenarios
 }
 
 // ParseScenarioType parses a ScenarioType from the current position in the parser
 func (p *Parser) ParseScenarioType(lastTags []string) object.ScenarioType {
-	tags := []string{}
+	tags := lastTags
 	p.skipNewLines()
 	if p.curTokenIs(token.TAG) {
 		tags = p.ParseTags()
+		if len(lastTags) > 0 {
+			return nil
+		}
 		if tags == nil {
 			return nil
 		}
@@ -396,10 +382,10 @@ func (p *Parser) ParseScenarioType(lastTags []string) object.ScenarioType {
 			} else {
 				tableTags = append(tableTags, []string{})
 			}
+			p.skipNewLines()
 
 			if !p.curTokenIs(token.EXAMPLES) {
-				p.peekError(token.EXAMPLES)
-				return nil
+				break
 			}
 			if !p.expectPeek(token.COLON) {
 				p.peekError(token.COLON)
