@@ -7,6 +7,7 @@ import (
 	"github.com/dpakach/gorkin/lexer"
 	"github.com/dpakach/gorkin/object"
 	"github.com/dpakach/gorkin/token"
+	"github.com/dpakach/gorkin/utils"
 )
 
 type stepDataType struct {
@@ -698,7 +699,96 @@ func TestParsingFeature(t *testing.T) {
 	for i, data := range expected {
 		assertBlockStepsEqual(t, stepDataProvider[data.dataProviderKey], scenarios[i].(*object.Scenario).Steps)
 	}
+}
 
+func TestParsingFeature2(t *testing.T) {
+	input := fmt.Sprintf(`
+	@coolFeature
+	Feature: This is a feature
+		Some description about the feature
+		Also some more description
+		Plus to top it off some extra description
+
+		Background:
+			%v
+
+		Scenario: scenario case
+			%v
+
+		@tag42
+		Scenario Outline: test new
+			%v
+			Examples:
+			 | data |
+			 | row  |
+
+			@newTag
+			Examples:
+			 | data |
+			 | row1 |
+
+		@hello
+		Scenario: test new simple
+			%v
+	`, stepInput1, stepInput1, stepInput2, stepInput3)
+
+	l := lexer.New(input)
+	p := New(l)
+
+	feature := p.ParseFeature()
+	checkParserErrors(t, p)
+
+	expectedTitle := "This is a feature"
+	if feature.Title != expectedTitle {
+		t.Fatalf("Title mismatch, expected %v, got %v", expectedTitle, feature.Title)
+	}
+
+	expectedTags := []string{"coolFeature"}
+
+	if !areArrayEqual(expectedTags, feature.Tags) {
+		t.Fatalf("Tags mismatch, expected %v, got %v", expectedTags, feature.Tags)
+	}
+
+	if feature.Background == nil {
+		t.Fatal("Expected background to not be null but got nil")
+	}
+
+	expected := []struct {
+		title string
+		tags  []string
+	}{
+		{
+			title: "scenario case",
+			tags:  []string{},
+		},
+		{
+			title: "test new",
+			tags:  []string{"tag42"},
+		},
+		{
+			title: "test new",
+			tags:  []string{"tag42", "newTag"},
+		},
+		{
+			title: "test new simple",
+			tags:  []string{"hello"},
+		},
+	}
+
+	sc := []object.Scenario{}
+	for _, s := range feature.Scenarios {
+		sc = append(sc, s.GetScenarios()...)
+	}
+
+	for i, s := range expected {
+		if s.title != sc[i].ScenarioText {
+			t.Fatalf("Title mismatch, expected %s, got %v", s.title, sc[i].ScenarioText)
+		}
+
+		if !utils.AreArrayEqual(s.tags, sc[i].Tags) {
+			t.Fatalf("Tags mismatch, expected %v, got %v", s.tags, sc[i].Tags)
+		}
+	}
 }
 
 func TestParsingFeatureSet(t *testing.T) {
